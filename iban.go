@@ -7,7 +7,7 @@ import (
 func IBAN[T ~string](value T) error {
 	_, err := iban.NewIBAN(string(value))
 	if err != nil {
-		return NewError("iban", nil)
+		return NewError("validate.iban", nil)
 	}
 
 	return nil

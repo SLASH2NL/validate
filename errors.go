@@ -6,6 +6,10 @@ import (
 	"iter"
 )
 
+const (
+	UnknownError = "unknown_error"
+)
+
 // Collect returns all the internal errors as a slice of Error.
 func Collect(err error) Errors {
 	var errors Errors
@@ -22,7 +26,9 @@ func Collect(err error) Errors {
 func CollectIter(err error) iter.Seq[Error] {
 	return func(yield func(Error) bool) {
 		// If the error is wrapped we try to unwrap it.
-		if !isValidationError(err) {
+		switch err.(type) {
+		case validationError, *errorList, *fieldErrors:
+		default:
 			// Try to find errors in order.
 			var list *errorList
 			var field *fieldErrors
@@ -70,7 +76,7 @@ func (e Error) FullPath() string {
 }
 
 func (e Error) Error() string {
-	return fmt.Sprintf("%s (field: %s, args: %v)", e.Code, e.Field, e.Args)
+	return fmt.Sprintf("%s (path: %s, field: %s, args: %v)", e.Code, e.Path, e.Field, e.Args)
 }
 
 func yieldErrors(err error, parentPath string, field string, yield func(Error) bool) bool {
@@ -87,9 +93,8 @@ func yieldErrors(err error, parentPath string, field string, yield func(Error) b
 			Args:  e.args,
 		})
 	case *errorList:
-		newPath := computePath(parentPath, field)
 		for _, err := range e.errors {
-			if !yieldErrors(err, newPath, "", yield) {
+			if !yieldErrors(err, parentPath, field, yield) {
 				return false
 			}
 		}
@@ -120,11 +125,25 @@ type errorList struct {
 }
 
 func (e *errorList) append(err error) {
-	if err == nil || !isValidationError(err) {
+	if err == nil {
 		return
 	}
 
-	e.errors = append(e.errors, err)
+	switch err := err.(type) {
+	case *errorList:
+		e.errors = append(e.errors, err.errors...)
+	case *fieldErrors:
+		// Only add field errors if there are any errors.
+		if len(err.errors) > 0 {
+			e.errors = append(e.errors, err)
+		}
+	case validationError:
+		e.errors = append(e.errors, err)
+	default:
+		e.errors = append(e.errors, NewError(UnknownError, map[string]any{
+			"err": err,
+		}))
+	}
 }
 
 func (e *errorList) Error() string {
@@ -144,11 +163,25 @@ type fieldErrors struct {
 }
 
 func (e *fieldErrors) append(err error) {
-	if err == nil || !isValidationError(err) {
+	if err == nil {
 		return
 	}
 
-	e.errors = append(e.errors, err)
+	switch err := err.(type) {
+	case *errorList:
+		e.errors = append(e.errors, err.errors...)
+	case *fieldErrors:
+		// Only add field errors if there are any errors.
+		if len(err.errors) > 0 {
+			e.errors = append(e.errors, err)
+		}
+	case validationError:
+		e.errors = append(e.errors, err)
+	default:
+		e.errors = append(e.errors, NewError(UnknownError, map[string]any{
+			"err": err,
+		}))
+	}
 }
 
 func (e *fieldErrors) Error() string {
@@ -170,13 +203,4 @@ func computePath(parent string, field string) string {
 	}
 
 	return parent + "." + field
-}
-
-func isValidationError(err error) bool {
-	switch err.(type) {
-	case validationError, *errorList, *fieldErrors:
-		return true
-	}
-
-	return false
 }

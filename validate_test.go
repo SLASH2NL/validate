@@ -37,7 +37,7 @@ func TestValidate(t *testing.T) {
 
 	require.Equal(t, 1, len(errs))
 	require.Equal(t, "first_name", errs[0].Field)
-	require.Equal(t, "equal", errs[0].Code)
+	require.Equal(t, "validate.equal", errs[0].Code)
 	require.Equal(t, "Peter", errs[0].Args["expected"])
 }
 

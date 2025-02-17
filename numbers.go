@@ -7,7 +7,7 @@ import (
 func NumberMin[T constraints.Integer | constraints.Float](min T) Validator[T] {
 	return func(value T) error {
 		if value < min {
-			return NewError("min", map[string]any{
+			return NewError("validate.number.min", map[string]any{
 				"min": min,
 			})
 		}
@@ -19,7 +19,7 @@ func NumberMin[T constraints.Integer | constraints.Float](min T) Validator[T] {
 func NumberMax[T constraints.Integer | constraints.Float](max T) Validator[T] {
 	return func(value T) error {
 		if value > max {
-			return NewError("max", map[string]any{
+			return NewError("validate.number.max", map[string]any{
 				"max": max,
 			})
 		}

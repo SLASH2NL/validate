@@ -9,13 +9,32 @@ import (
 // If the validator does not fail it should return nil.
 type Validator[T any] func(value T) error
 
-// Validate will run the validators on the value and return the errors.
+// Validate will run the validators on the value and return the errors grouped by the fieldName.
 func Validate[T any](
-	field string,
+	fieldName string,
 	value T,
 	validators ...Validator[T],
 ) error {
-	errs := newFieldErrors(field)
+	errs := newFieldErrors(fieldName)
+
+	for _, validator := range validators {
+		errs.append(validator(value))
+	}
+
+	if len(errs.errors) == 0 {
+		return nil
+	}
+
+	return errs
+}
+
+// PlainValidate will run the validators on the value and return the errors.
+// Callers are responsible for grouping the errors.
+func PlainValidate[T any](
+	value T,
+	validators ...Validator[T],
+) error {
+	errs := newErrorList()
 
 	for _, validator := range validators {
 		errs.append(validator(value))
@@ -63,6 +82,10 @@ func If[T any](shouldRun bool, validator ...Validator[T]) Validator[T] {
 			errs.append(v(value))
 		}
 
+		if len(errs.errors) == 0 {
+			return nil
+		}
+
 		return errs
 	}
 }
@@ -102,8 +125,12 @@ func Group(field string, err error) error {
 		return nil
 	}
 
-	return &fieldErrors{
-		field:  field,
-		errors: []error{err},
+	group := newFieldErrors(field)
+	group.append(err)
+
+	if len(group.errors) == 0 {
+		return nil
 	}
+
+	return group
 }

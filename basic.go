@@ -5,7 +5,7 @@ func Required[T comparable](value T) error {
 	var x T // Create the nullable value for the type
 
 	if value == x {
-		return NewError("required", nil)
+		return NewError("validate.required", nil)
 	}
 
 	return nil
@@ -16,7 +16,7 @@ func Required[T comparable](value T) error {
 func Equal[T comparable](expected T) Validator[T] {
 	return func(value T) error {
 		if value != expected {
-			return NewError("equal", map[string]any{
+			return NewError("validate.equal", map[string]any{
 				"expected": expected,
 			})
 		}
@@ -34,7 +34,7 @@ func OneOf[T comparable](accepted ...T) Validator[T] {
 			}
 		}
 
-		return NewError("oneof", map[string]any{
+		return NewError("validate.oneof", map[string]any{
 			"accepted": accepted,
 		})
 	}
