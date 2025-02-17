@@ -48,6 +48,11 @@ type Error struct {
 	Args  map[string]any
 }
 
+// FullPath returns the path and the field.
+func (e Error) FullPath() string {
+	return computePath(e.Path, e.Field)
+}
+
 func (e Error) Error() string {
 	return fmt.Sprintf("%s (field: %s, args: %v)", e.Code, e.Field, e.Args)
 }
