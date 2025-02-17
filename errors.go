@@ -1,6 +1,7 @@
 package validate
 
 import (
+	"errors"
 	"fmt"
 	"iter"
 )
@@ -20,6 +21,21 @@ func Collect(err error) Errors {
 // If an error can not be converted to an Error, it will be ignored.
 func CollectIter(err error) iter.Seq[Error] {
 	return func(yield func(Error) bool) {
+		// If the error is wrapped we try to unwrap it.
+		if !isValidationError(err) {
+			// Try to find errors in order.
+			var list *errorList
+			var field *fieldErrors
+			var verr validationError
+			if errors.As(err, &list) {
+				err = list
+			} else if errors.As(err, &field) {
+				err = field
+			} else if errors.As(err, &verr) {
+				err = verr
+			}
+		}
+
 		if !yieldErrors(err, "", "", yield) {
 			return
 		}
@@ -93,12 +109,18 @@ func yieldErrors(err error, parentPath string, field string, yield func(Error) b
 	return true
 }
 
+func newErrorList() *errorList {
+	return &errorList{
+		errors: make([]error, 0),
+	}
+}
+
 type errorList struct {
 	errors []error
 }
 
 func (e *errorList) append(err error) {
-	if err == nil || !canAddError(err) {
+	if err == nil || !isValidationError(err) {
 		return
 	}
 
@@ -122,7 +144,7 @@ type fieldErrors struct {
 }
 
 func (e *fieldErrors) append(err error) {
-	if err == nil || !canAddError(err) {
+	if err == nil || !isValidationError(err) {
 		return
 	}
 
@@ -142,12 +164,6 @@ func (e validationError) Error() string {
 	return fmt.Sprintf("validation: %s (args: %v)", e.code, e.args)
 }
 
-func newErrorList() *errorList {
-	return &errorList{
-		errors: make([]error, 0),
-	}
-}
-
 func computePath(parent string, field string) string {
 	if parent == "" {
 		return field
@@ -156,11 +172,11 @@ func computePath(parent string, field string) string {
 	return parent + "." + field
 }
 
-func canAddError(err error) bool {
+func isValidationError(err error) bool {
 	switch err.(type) {
 	case validationError, *errorList, *fieldErrors:
 		return true
 	}
 
-	return true
+	return false
 }
