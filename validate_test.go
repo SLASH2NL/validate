@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/SLASH2NL/validate"
+	"github.com/SLASH2NL/validate/vcodes"
 	"github.com/stretchr/testify/require"
 )
 
@@ -37,7 +38,7 @@ func TestValidate(t *testing.T) {
 
 	require.Equal(t, 1, len(errs))
 	require.Equal(t, "first_name", errs[0].Field)
-	require.Equal(t, "equal", errs[0].Code)
+	require.Equal(t, vcodes.Equal, errs[0].Code)
 	require.Equal(t, "Peter", errs[0].Args["expected"])
 }
 
@@ -58,7 +59,7 @@ func TestSlice(t *testing.T) {
 			}),
 			validate.Validate("amount", value.Amount, func(x int) error {
 				if x >= 9 {
-					return validate.NewError("max", nil)
+					return validate.NewError(vcodes.NumberMax, nil)
 				}
 
 				return nil
@@ -78,7 +79,7 @@ func TestSlice(t *testing.T) {
 	verrs := validate.Collect(err)
 	require.Equal(t, 1, len(verrs))
 	require.Equal(t, "amount", verrs[0].Field)
-	require.Equal(t, "max", verrs[0].Code)
+	require.Equal(t, vcodes.NumberMax, verrs[0].Code)
 	require.Equal(t, "[0]", verrs[0].Path)
 }
 
@@ -93,7 +94,7 @@ func TestIf(t *testing.T) {
 
 	errs := validate.Collect(err)
 	require.Equal(t, 1, len(errs))
-	require.Equal(t, "fail", errs[0].Code)
+	require.Equal(t, vcodes.Code("fail"), errs[0].Code)
 
 	// Validate false condition should not run the validator.
 	err = validate.Validate[string](
@@ -117,7 +118,7 @@ func TestFailFirst(t *testing.T) {
 	require.NotNil(t, errs)
 	require.Equal(t, 1, len(errs))
 	require.Equal(t, "first_name", errs[0].Field)
-	require.Equal(t, "first", errs[0].Code)
+	require.Equal(t, vcodes.Code("first"), errs[0].Code)
 }
 
 func TestJoin(t *testing.T) {
@@ -144,11 +145,11 @@ func TestJoin(t *testing.T) {
 	require.Equal(t, 2, len(errs))
 	require.Equal(t, "", errs[0].Path)
 	require.Equal(t, "name", errs[0].Field)
-	require.Equal(t, "name.fail", errs[0].Code)
+	require.Equal(t, vcodes.Code("name.fail"), errs[0].Code)
 
 	require.Equal(t, "address", errs[1].Path)
 	require.Equal(t, "street", errs[1].Field)
-	require.Equal(t, "street.fail.first", errs[1].Code)
+	require.Equal(t, vcodes.Code("street.fail.first"), errs[1].Code)
 }
 
 func TestGroup(t *testing.T) {
@@ -167,10 +168,10 @@ func TestGroup(t *testing.T) {
 	require.Equal(t, 1, len(errs))
 	require.Equal(t, "person.address", errs[0].Path)
 	require.Equal(t, "street", errs[0].Field)
-	require.Equal(t, "fail", errs[0].Code)
+	require.Equal(t, vcodes.Code("fail"), errs[0].Code)
 }
 
-func failValidatorWithCode[T any](code string) validate.Validator[T] {
+func failValidatorWithCode[T any](code vcodes.Code) validate.Validator[T] {
 	return func(value T) error {
 		return validate.NewError(code, nil)
 	}

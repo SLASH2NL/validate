@@ -1,11 +1,13 @@
 package validate
 
+import "github.com/SLASH2NL/validate/vcodes"
+
 // Required will validate that the value is not the zero value for the type.
 func Required[T comparable](value T) error {
 	var x T // Create the nullable value for the type
 
 	if value == x {
-		return NewError("required", nil)
+		return NewError(vcodes.Required, nil)
 	}
 
 	return nil
@@ -16,7 +18,7 @@ func Required[T comparable](value T) error {
 func Equal[T comparable](expected T) Validator[T] {
 	return func(value T) error {
 		if value != expected {
-			return NewError("equal", map[string]any{
+			return NewError(vcodes.Equal, map[string]any{
 				"expected": expected,
 			})
 		}
@@ -34,7 +36,7 @@ func OneOf[T comparable](accepted ...T) Validator[T] {
 			}
 		}
 
-		return NewError("oneof", map[string]any{
+		return NewError(vcodes.OneOf, map[string]any{
 			"accepted": accepted,
 		})
 	}

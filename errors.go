@@ -4,10 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"iter"
-)
 
-const (
-	UnknownError = "unknown_error"
+	"github.com/SLASH2NL/validate/vcodes"
 )
 
 // Collect returns all the internal errors as a slice of Error.
@@ -50,7 +48,7 @@ func CollectIter(err error) iter.Seq[Error] {
 
 // NewError creates a new validation error with the given code and arguments.
 // It is used by validators to create a new error.
-func NewError(code string, args ErrArgs) error {
+func NewError(code vcodes.Code, args ErrArgs) error {
 	return validationError{
 		code: code,
 		args: args,
@@ -66,7 +64,7 @@ type Errors []Error
 type Error struct {
 	Field string
 	Path  string
-	Code  string
+	Code  vcodes.Code
 	Args  ErrArgs
 }
 
@@ -151,7 +149,7 @@ func (e *errorList) append(err error) {
 	case validationError:
 		e.errors = append(e.errors, err)
 	default:
-		e.errors = append(e.errors, NewError(UnknownError, map[string]any{
+		e.errors = append(e.errors, NewError(vcodes.Unknown, map[string]any{
 			"err": err,
 		}))
 	}
@@ -189,7 +187,7 @@ func (e *fieldErrors) append(err error) {
 	case validationError:
 		e.errors = append(e.errors, err)
 	default:
-		e.errors = append(e.errors, NewError(UnknownError, map[string]any{
+		e.errors = append(e.errors, NewError(vcodes.Unknown, map[string]any{
 			"err": err,
 		}))
 	}
@@ -200,7 +198,7 @@ func (e *fieldErrors) Error() string {
 }
 
 type validationError struct {
-	code string
+	code vcodes.Code
 	args map[string]any
 }
 
