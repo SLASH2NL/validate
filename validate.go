@@ -10,12 +10,12 @@ import (
 type Validator[T any] func(value T) error
 
 // Validate will run the validators on the value and return the errors grouped by the fieldName.
-func Validate[T any](
-	fieldName string,
+func Validate[F ~string, T any](
+	fieldName F,
 	value T,
 	validators ...Validator[T],
 ) error {
-	errs := newFieldErrors(fieldName)
+	errs := newFieldErrors(string(fieldName))
 
 	for _, validator := range validators {
 		errs.append(validator(value))
@@ -120,12 +120,12 @@ func Slice[T any](value []T, fn func(value T) error) error {
 }
 
 // Group will add err to a a grouped error.
-func Group(field string, err error) error {
+func Group[F ~string](field F, err error) error {
 	if err == nil {
 		return nil
 	}
 
-	group := newFieldErrors(field)
+	group := newFieldErrors(string(field))
 	group.append(err)
 
 	if len(group.errors) == 0 {
