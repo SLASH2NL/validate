@@ -9,7 +9,7 @@ import (
 func Email(value string) error {
 	_, merr := mail.ParseAddress(string(value))
 	if merr != nil {
-		return NewError("validate.string.email", nil)
+		return NewError("string.email", nil)
 	}
 
 	return nil
@@ -18,7 +18,7 @@ func Email(value string) error {
 func StrRegexRaw(pattern string, re *regexp.Regexp) Validator[string] {
 	return func(value string) error {
 		if !re.MatchString(value) {
-			return NewError("validate.string.regex", map[string]any{
+			return NewError("string.regex", map[string]any{
 				"pattern": pattern,
 			})
 		}
@@ -32,14 +32,14 @@ func StrRegex(pattern string) Validator[string] {
 
 	return func(value string) error {
 		if err != nil {
-			return NewError("validate.string.regex.invalid", map[string]any{
+			return NewError("string.regex.invalid", map[string]any{
 				"pattern": pattern,
 				"error":   err.Error(),
 			})
 		}
 
 		if !re.MatchString(value) {
-			return NewError("validate.string.regex", map[string]any{
+			return NewError("string.regex", map[string]any{
 				"pattern": pattern,
 			})
 		}
@@ -51,7 +51,7 @@ func StrRegex(pattern string) Validator[string] {
 func StrMin(length int) Validator[string] {
 	return func(value string) error {
 		if len(value) < length {
-			return NewError("validate.string.min", map[string]any{
+			return NewError("string.min", map[string]any{
 				"min": length,
 			})
 		}
@@ -63,7 +63,7 @@ func StrMin(length int) Validator[string] {
 func StrMax(length int) Validator[string] {
 	return func(value string) error {
 		if len(value) > length {
-			return NewError("validate.string.max", map[string]any{
+			return NewError("string.max", map[string]any{
 				"max": length,
 			})
 		}
@@ -75,7 +75,7 @@ func StrMax(length int) Validator[string] {
 func StrLowercase(value string) error {
 	for _, r := range value {
 		if unicode.IsUpper(r) {
-			return NewError("validate.string.lowercase", map[string]any{})
+			return NewError("string.lowercase", map[string]any{})
 		}
 	}
 
@@ -85,7 +85,7 @@ func StrLowercase(value string) error {
 func StrUppercase(value string) error {
 	for _, r := range value {
 		if unicode.IsLower(r) {
-			return NewError("validate.string.uppercase", map[string]any{})
+			return NewError("string.uppercase", map[string]any{})
 		}
 	}
 
