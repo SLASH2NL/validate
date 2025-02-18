@@ -50,7 +50,7 @@ func CollectIter(err error) iter.Seq[Error] {
 
 // NewError creates a new validation error with the given code and arguments.
 // It is used by validators to create a new error.
-func NewError(code string, args map[string]any) error {
+func NewError(code string, args ErrArgs) error {
 	return validationError{
 		code: code,
 		args: args,
@@ -67,7 +67,18 @@ type Error struct {
 	Field string
 	Path  string
 	Code  string
-	Args  map[string]any
+	Args  ErrArgs
+}
+
+type ErrArgs map[string]any
+
+func (e ErrArgs) Merge(key string, value any) ErrArgs {
+	if e == nil {
+		e = make(ErrArgs)
+	}
+
+	e[key] = value
+	return e
 }
 
 // FullPath returns the path and the field.
