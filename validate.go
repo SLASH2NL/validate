@@ -68,7 +68,7 @@ func Join(errs ...error) error {
 }
 
 // If will run the validator only if the shouldRun is true.
-func If[T any](shouldRun bool, validator ...Validator[T]) Validator[T] {
+func If[T any](shouldRun bool, validators ...Validator[T]) Validator[T] {
 	if !shouldRun {
 		return func(value T) error {
 			return nil
@@ -76,17 +76,7 @@ func If[T any](shouldRun bool, validator ...Validator[T]) Validator[T] {
 	}
 
 	return func(value T) error {
-		errs := newErrorList()
-
-		for _, v := range validator {
-			errs.append(v(value))
-		}
-
-		if len(errs.errors) == 0 {
-			return nil
-		}
-
-		return errs
+		return PlainValidate(value, validators...)
 	}
 }
 
@@ -105,11 +95,41 @@ func FailFirst[T any](validators ...Validator[T]) Validator[T] {
 }
 
 // Slice will run the validator on each element in the slice.
-func Slice[T any](value []T, fn func(value T) error) error {
+func Slice[T any](value []T, validators ...Validator[T]) error {
 	errs := newErrorList()
 
 	for i, v := range value {
-		errs.append(Group(fmt.Sprintf("[%d]", i), fn(v)))
+		errs.append(Group(fmt.Sprintf("[%d]", i), PlainValidate(v, validators...)))
+	}
+
+	if len(errs.errors) == 0 {
+		return nil
+	}
+
+	return errs
+}
+
+// Map will run the validator on each value in the map and return the errors grouped by the key.
+func Map[K comparable, V any](value map[K]V, validators ...Validator[V]) error {
+	errs := newErrorList()
+
+	for k, v := range value {
+		errs.append(Group(fmt.Sprintf("%v", k), PlainValidate(v, validators...)))
+	}
+
+	if len(errs.errors) == 0 {
+		return nil
+	}
+
+	return errs
+}
+
+// Key will run the validator on each key in the map and return the errors grouped by the key.
+func Key[K comparable, V any](value map[K]V, validators ...Validator[K]) error {
+	errs := newErrorList()
+
+	for k := range value {
+		errs.append(Group(fmt.Sprintf("%v", k), PlainValidate(k, validators...)))
 	}
 
 	if len(errs.errors) == 0 {

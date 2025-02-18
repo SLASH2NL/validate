@@ -83,6 +83,40 @@ func TestSlice(t *testing.T) {
 	require.Equal(t, "[0]", verrs[0].Path)
 }
 
+func TestMap(t *testing.T) {
+	data := map[string]int{
+		"John": 9,
+		"Joe":  1,
+	}
+
+	err := validate.Map(
+		data,
+		validate.NumberMax(5),
+	)
+	require.NotNil(t, err)
+	errs := validate.Collect(err)
+	require.Equal(t, 1, len(errs))
+	require.Equal(t, "John", errs[0].Field)
+	require.Equal(t, vcodes.NumberMax, errs[0].Code)
+}
+
+func TestKey(t *testing.T) {
+	data := map[int]string{
+		9: "John",
+		1: "Joe",
+	}
+
+	err := validate.Key(
+		data,
+		validate.NumberMax(5),
+	)
+	require.NotNil(t, err)
+	errs := validate.Collect(err)
+	require.Equal(t, 1, len(errs))
+	require.Equal(t, "9", errs[0].Field)
+	require.Equal(t, vcodes.NumberMax, errs[0].Code)
+}
+
 func TestIf(t *testing.T) {
 	// Validate true condition should run the validator.
 	err := validate.Validate(
