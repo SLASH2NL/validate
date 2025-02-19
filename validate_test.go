@@ -223,6 +223,22 @@ func TestGroup(t *testing.T) {
 	require.Equal(t, vcodes.Code("fail"), errs[0].Code)
 }
 
+func TestGroupValidators(t *testing.T) {
+	err := validate.Validate(
+		"value",
+		validate.GroupValidators(
+			"field-name",
+			validate.StrMin(10),
+		),
+	)
+
+	errs := validate.Collect(err)
+	require.Equal(t, 1, len(errs))
+	require.Equal(t, "", errs[0].Path)
+	require.Equal(t, "field-name", errs[0].Field)
+	require.Equal(t, vcodes.StringMin, errs[0].Code)
+}
+
 func failValidatorWithCode[T any](code vcodes.Code) validate.Validator[T] {
 	return func(value T) error {
 		return validate.NewError(code, nil)

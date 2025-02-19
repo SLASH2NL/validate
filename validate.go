@@ -192,7 +192,7 @@ func Group[F ~string](field F, err error) error {
 //	)
 //
 // This will return an error with the Path: "[0]" and the Field: "first_name".
-func GroupValidators[F ~string, T any](field F, value T, validators ...Validator[T]) Validator[T] {
+func GroupValidators[F ~string, T any](field F, validators ...Validator[T]) Validator[T] {
 	return func(value T) error {
 		return Group(field, Validate(value, validators...))
 	}
