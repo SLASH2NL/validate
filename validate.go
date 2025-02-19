@@ -85,6 +85,18 @@ func FailFirst[T any](validators ...Validator[T]) Validator[T] {
 	}
 }
 
+// Override will run the validator and if it fails it will return the override error.
+func Override[T any](validator Validator[T], override error) Validator[T] {
+	return func(value T) error {
+		err := validator(value)
+		if err != nil {
+			return override
+		}
+
+		return nil
+	}
+}
+
 // Slice will run the validator on each element in the slice.
 func Slice[T any](value []T, validators ...Validator[T]) error {
 	errs := newErrorList()
