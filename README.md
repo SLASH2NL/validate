@@ -4,7 +4,7 @@ Validate is a simple golang validation library that is focussed on simplicity an
 [![GoDev](https://pkg.go.dev/badge/github.com/SLASH2NL/validate)](https://pkg.go.dev/github.com/SLASH2NL/validate)
 
 ## Usage
-See [the example](https://pkg.go.dev/github.com/SLASH2NL/validate) for the usage of the library.
+See [the example](https://pkg.go.dev/github.com/SLASH2NL/validate#example-Validate) for the usage of the library.
 
 ## Creating custom validators
 A validator is a simple function that takes a value and returns an error if the value is invalid.
