@@ -101,6 +101,40 @@ func TestMap(t *testing.T) {
 	require.Equal(t, vcodes.NumberMax, errs[0].Code)
 }
 
+func TestMapValues(t *testing.T) {
+	data := map[string]int{
+		"John": 9,
+		"Joe":  1,
+	}
+
+	err := validate.MapValues(
+		data,
+		validate.NumberMax(5),
+	)
+	require.NotNil(t, err)
+	errs := validate.Collect(err)
+	require.Equal(t, 1, len(errs))
+	require.Equal(t, "John", errs[0].Field)
+	require.Equal(t, vcodes.NumberMax, errs[0].Code)
+}
+
+func TestMapKeys(t *testing.T) {
+	data := map[string]int{
+		"John": 9,
+		"Joe":  1,
+	}
+
+	err := validate.MapKeys(
+		data,
+		validate.OneOf("Joe"),
+	)
+	require.NotNil(t, err)
+	errs := validate.Collect(err)
+	require.Equal(t, 1, len(errs))
+	require.Equal(t, "John", errs[0].Field)
+	require.Equal(t, vcodes.OneOf, errs[0].Code)
+}
+
 func TestIf(t *testing.T) {
 	// Validate true condition should run the validator.
 	err := validate.Field(

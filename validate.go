@@ -100,18 +100,18 @@ func Slice[T any](value []T, validators ...Validator[T]) error {
 	return errs
 }
 
-// Map will run the validators for each given key and return the errors grouped by the key.
-func Map[K comparable, V any](value map[K]V, keyValidators ...keyValidator[K, V]) error {
+// Map will run the every KeyValidator and return the errors grouped by the key defined in the KeyValidator.
+func Map[K comparable, V any](value map[K]V, mapValidators ...MapValidator[K, V]) error {
 	errs := newErrorList()
 
-	for _, v := range keyValidators {
-		value, ok := value[v.key]
+	for _, v := range mapValidators {
+		value, ok := value[v.matchKey]
 		if !ok {
-			errs.append(Group(fmt.Sprintf("%v", v.key), NewError(UnknownField, nil)))
+			errs.append(Group(fmt.Sprintf("%v", v.matchKey), NewError(UnknownField, nil)))
 			continue
 		}
 
-		errs.append(Group(fmt.Sprintf("%v", v.key), Validate(value, v.validators...)))
+		errs.append(Group(fmt.Sprintf("%v", v.matchKey), Validate(value, v.validators...)))
 	}
 
 	if len(errs.errors) == 0 {
@@ -121,9 +121,40 @@ func Map[K comparable, V any](value map[K]V, keyValidators ...keyValidator[K, V]
 	return errs
 }
 
-func Key[K comparable, V any](key K, validators ...Validator[V]) keyValidator[K, V] {
-	return keyValidator[K, V]{
-		key:        key,
+// MapKeys will run the validators on every key.
+func MapKeys[K comparable, V any](data map[K]V, validators ...Validator[K]) error {
+	errs := newErrorList()
+
+	for key := range data {
+		errs.append(Group(fmt.Sprintf("%v", key), Validate(key, validators...)))
+	}
+
+	if len(errs.errors) == 0 {
+		return nil
+	}
+
+	return errs
+}
+
+// MapValues will run the validators on every value.
+func MapValues[K comparable, V any](data map[K]V, validators ...Validator[V]) error {
+	errs := newErrorList()
+
+	for key, value := range data {
+		errs.append(Group(fmt.Sprintf("%v", key), Validate(value, validators...)))
+	}
+
+	if len(errs.errors) == 0 {
+		return nil
+	}
+
+	return errs
+}
+
+// Key will return a MapValidator that runs the validator on the value of the given key.
+func Key[K comparable, V any](key K, validators ...Validator[V]) MapValidator[K, V] {
+	return MapValidator[K, V]{
+		matchKey:   key,
 		validators: validators,
 	}
 }
@@ -167,7 +198,7 @@ func GroupValidators[F ~string, T any](field F, value T, validators ...Validator
 	}
 }
 
-type keyValidator[K comparable, V any] struct {
-	key        K
+type MapValidator[K comparable, V any] struct {
+	matchKey   K
 	validators []Validator[V]
 }
