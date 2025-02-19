@@ -8,6 +8,10 @@ import (
 	"github.com/SLASH2NL/validate/vcodes"
 )
 
+const (
+	UnknownField = "unknown"
+)
+
 // Collect returns all the internal errors as a slice of Error.
 func Collect(err error) Errors {
 	var errors Errors
@@ -95,6 +99,10 @@ func yieldErrors(err error, parentPath string, field string, yield func(Error) b
 
 	switch e := err.(type) {
 	case validationError:
+		if field == "" {
+			field = UnknownField
+		}
+
 		return yield(Error{
 			Field: field,
 			Path:  parentPath,

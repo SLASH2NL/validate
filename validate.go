@@ -9,28 +9,9 @@ import (
 // If the validator does not fail it should return nil.
 type Validator[T any] func(value T) error
 
-// Validate will run the validators on the value and return the errors grouped by the fieldName.
-func Validate[F ~string, T any](
-	fieldName F,
-	value T,
-	validators ...Validator[T],
-) error {
-	errs := newFieldErrors(string(fieldName))
-
-	for _, validator := range validators {
-		errs.append(validator(value))
-	}
-
-	if len(errs.errors) == 0 {
-		return nil
-	}
-
-	return errs
-}
-
-// PlainValidate will run the validators on the value and return the errors.
-// Callers are responsible for grouping the errors.
-func PlainValidate[T any](
+// Validate will run the validators on the value and return the errors.
+// Errors are not scoped to a field, callers are responsible for grouping the errors or using Field.
+func Validate[T any](
 	value T,
 	validators ...Validator[T],
 ) error {
@@ -45,6 +26,16 @@ func PlainValidate[T any](
 	}
 
 	return errs
+}
+
+// Field will run the validators on the value and return the errors grouped by the field.
+func Field[F ~string, T any](fieldName F, value T, validators ...Validator[T]) error {
+	err := Validate(value, validators...)
+	if err == nil {
+		return nil
+	}
+
+	return Group(fieldName, err)
 }
 
 // Join will Join the errors into a single slice.
@@ -76,7 +67,7 @@ func If[T any](shouldRun bool, validators ...Validator[T]) Validator[T] {
 	}
 
 	return func(value T) error {
-		return PlainValidate(value, validators...)
+		return Validate(value, validators...)
 	}
 }
 
@@ -99,7 +90,7 @@ func Slice[T any](value []T, validators ...Validator[T]) error {
 	errs := newErrorList()
 
 	for i, v := range value {
-		errs.append(Group(fmt.Sprintf("[%d]", i), PlainValidate(v, validators...)))
+		errs.append(Group(fmt.Sprintf("[%d]", i), Validate(v, validators...)))
 	}
 
 	if len(errs.errors) == 0 {
@@ -109,12 +100,18 @@ func Slice[T any](value []T, validators ...Validator[T]) error {
 	return errs
 }
 
-// Map will run the validator on each value in the map and return the errors grouped by the key.
-func Map[K comparable, V any](value map[K]V, validators ...Validator[V]) error {
+// Map will run the validators for each given key and return the errors grouped by the key.
+func Map[K comparable, V any](value map[K]V, keyValidators ...keyValidator[K, V]) error {
 	errs := newErrorList()
 
-	for k, v := range value {
-		errs.append(Group(fmt.Sprintf("%v", k), PlainValidate(v, validators...)))
+	for _, v := range keyValidators {
+		value, ok := value[v.key]
+		if !ok {
+			errs.append(Group(fmt.Sprintf("%v", v.key), NewError(UnknownField, nil)))
+			continue
+		}
+
+		errs.append(Group(fmt.Sprintf("%v", v.key), Validate(value, v.validators...)))
 	}
 
 	if len(errs.errors) == 0 {
@@ -124,22 +121,21 @@ func Map[K comparable, V any](value map[K]V, validators ...Validator[V]) error {
 	return errs
 }
 
-// Key will run the validator on each key in the map and return the errors grouped by the key.
-func Key[K comparable, V any](value map[K]V, validators ...Validator[K]) error {
-	errs := newErrorList()
-
-	for k := range value {
-		errs.append(Group(fmt.Sprintf("%v", k), PlainValidate(k, validators...)))
+func Key[K comparable, V any](key K, validators ...Validator[V]) keyValidator[K, V] {
+	return keyValidator[K, V]{
+		key:        key,
+		validators: validators,
 	}
-
-	if len(errs.errors) == 0 {
-		return nil
-	}
-
-	return errs
 }
 
-// Group will add err to a a grouped error.
+// Group will group the error by field.
+// If the given error is a validationError it will be transformed to:
+//
+//	fieldErrors{ field: "myField", errors: []error{err} }
+//
+// Using it this way will make Collect return the error like this:
+//
+//	[]Error{ { Field: "myField", Path: "", Code: the-code, Args: the-args } }
 func Group[F ~string](field F, err error) error {
 	if err == nil {
 		return nil
@@ -153,4 +149,25 @@ func Group[F ~string](field F, err error) error {
 	}
 
 	return group
+}
+
+// GroupValidators will group the validators by field.
+// This can be used for adding a field when validators are run in Slice or Map.
+// Example:
+//
+//	err := validate.Slice(
+//		[]string{"John", "Doe"},
+//		validate.GroupValidators("first_name", validate.Required),
+//	)
+//
+// This will return an error with the Path: "[0]" and the Field: "first_name".
+func GroupValidators[F ~string, T any](field F, value T, validators ...Validator[T]) Validator[T] {
+	return func(value T) error {
+		return Group(field, Validate(value, validators...))
+	}
+}
+
+type keyValidator[K comparable, V any] struct {
+	key        K
+	validators []Validator[V]
 }

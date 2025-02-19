@@ -13,7 +13,7 @@ func BenchmarkValidate(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		err := validate.Validate(
+		err := validate.Field(
 			"first_name",
 			"John",
 			successValidator,
@@ -26,7 +26,7 @@ func BenchmarkValidate(b *testing.B) {
 }
 
 func TestValidate(t *testing.T) {
-	err := validate.Validate(
+	err := validate.Field(
 		"first_name",
 		"John",
 		successValidator,
@@ -50,14 +50,14 @@ type testSlice struct {
 func TestSlice(t *testing.T) {
 	validators := func(value testSlice) error {
 		return validate.Join(
-			validate.Validate("name", value.Name, func(x string) error {
+			validate.Field("name", value.Name, func(x string) error {
 				if len(x) < 5 {
 					return validate.NewError("min_len", nil)
 				}
 
 				return nil
 			}),
-			validate.Validate("amount", value.Amount, func(x int) error {
+			validate.Field("amount", value.Amount, func(x int) error {
 				if x >= 9 {
 					return validate.NewError(vcodes.NumberMax, nil)
 				}
@@ -91,7 +91,8 @@ func TestMap(t *testing.T) {
 
 	err := validate.Map(
 		data,
-		validate.NumberMax(5),
+		validate.Key("John", validate.NumberMax(5)),
+		validate.Key("Joe", validate.NumberMax(5)),
 	)
 	require.NotNil(t, err)
 	errs := validate.Collect(err)
@@ -100,26 +101,9 @@ func TestMap(t *testing.T) {
 	require.Equal(t, vcodes.NumberMax, errs[0].Code)
 }
 
-func TestKey(t *testing.T) {
-	data := map[int]string{
-		9: "John",
-		1: "Joe",
-	}
-
-	err := validate.Key(
-		data,
-		validate.NumberMax(5),
-	)
-	require.NotNil(t, err)
-	errs := validate.Collect(err)
-	require.Equal(t, 1, len(errs))
-	require.Equal(t, "9", errs[0].Field)
-	require.Equal(t, vcodes.NumberMax, errs[0].Code)
-}
-
 func TestIf(t *testing.T) {
 	// Validate true condition should run the validator.
-	err := validate.Validate(
+	err := validate.Field(
 		"first_name",
 		"John",
 		validate.If(true, failValidator[string]),
@@ -131,7 +115,7 @@ func TestIf(t *testing.T) {
 	require.Equal(t, vcodes.Code("fail"), errs[0].Code)
 
 	// Validate false condition should not run the validator.
-	err = validate.Validate[string](
+	err = validate.Field[string](
 		"first_name",
 		"John",
 		validate.If(false, failValidator[string]),
@@ -141,7 +125,7 @@ func TestIf(t *testing.T) {
 
 func TestFailFirst(t *testing.T) {
 	// Validate true condition should run only 1 validator.
-	errs := validate.Collect(validate.Validate(
+	errs := validate.Collect(validate.Field(
 		"first_name",
 		"John",
 		validate.FailFirst(
@@ -157,13 +141,13 @@ func TestFailFirst(t *testing.T) {
 
 func TestJoin(t *testing.T) {
 	err := validate.Join(
-		validate.Validate(
+		validate.Field(
 			"name",
 			"",
 			failValidatorWithCode[string]("name.fail"),
 		),
 		validate.Group("address",
-			validate.Validate(
+			validate.Field(
 				"street",
 				"",
 				validate.FailFirst(
@@ -190,7 +174,7 @@ func TestGroup(t *testing.T) {
 	err := validate.Group("person",
 		validate.Group(
 			"address",
-			validate.Validate(
+			validate.Field(
 				"street",
 				"Some street 123",
 				failValidator[string],
