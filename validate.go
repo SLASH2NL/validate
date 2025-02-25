@@ -80,9 +80,9 @@ func FailFirst[T any](validators ...Validator[T]) Validator[T] {
 	}
 }
 
-// Override will override the path (not the exact path) in the given error.
+// OverridePath will override the path (not the exact path) in the given error.
 // This will only override the path if the error is of the type Error or Errors.
-func Override(path string, err error) error {
+func OverridePath(path string, err error) error {
 	switch err := err.(type) {
 	case Error:
 		err.Path = path
@@ -90,6 +90,24 @@ func Override(path string, err error) error {
 	case Errors:
 		for j, e := range err {
 			e.Path = path
+			err[j] = e
+		}
+		return err
+	}
+
+	return err
+}
+
+// OverrideExactPath will override the exact path in the given error.
+// This will only override the exact path if the error is of the type Error or Errors.
+func OverrideExactPath(path string, err error) error {
+	switch err := err.(type) {
+	case Error:
+		err.ExactPath = path
+		return err
+	case Errors:
+		for j, e := range err {
+			e.ExactPath = path
 			err[j] = e
 		}
 		return err

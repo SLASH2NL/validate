@@ -70,7 +70,7 @@ func TestJoin(t *testing.T) {
 	require.Equal(t, "iban.fail", errs[1].Violations[0].Code)
 }
 
-func TestOverride(t *testing.T) {
+func TestOverridePath(t *testing.T) {
 	t.Run("override", func(t *testing.T) {
 		err := validate.Join(
 			validate.Field(
@@ -86,17 +86,52 @@ func TestOverride(t *testing.T) {
 			),
 		)
 
-		err = validate.Override("test", err)
+		err = validate.OverridePath("test", err)
 
 		errs := validate.Collect(err)
 		require.Equal(t, 2, len(errs))
 		require.Equal(t, "test", errs[0].Path)
-		require.Equal(t, "name.fail", errs[0].Violations[0].Code)
-		require.Equal(t, "name.fail2", errs[0].Violations[1].Code)
+		require.Equal(t, "name", errs[0].ExactPath)
+
+		require.Equal(t, "test", errs[1].Path)
+		require.Equal(t, "iban", errs[1].ExactPath)
 	})
 
 	t.Run("override nil", func(t *testing.T) {
-		err := validate.Override("test", nil)
+		err := validate.OverridePath("test", nil)
+		require.Nil(t, err)
+	})
+}
+
+func TestOverrideExactPath(t *testing.T) {
+	t.Run("override", func(t *testing.T) {
+		err := validate.Join(
+			validate.Field(
+				"name",
+				"",
+				failValidatorWithCode[string]("name.fail"),
+				failValidatorWithCode[string]("name.fail2"),
+			),
+			validate.Field(
+				"iban",
+				"invalid",
+				failValidatorWithCode[string]("iban.fail"),
+			),
+		)
+
+		err = validate.OverrideExactPath("test", err)
+
+		errs := validate.Collect(err)
+		require.Equal(t, 2, len(errs))
+		require.Equal(t, "test", errs[0].ExactPath)
+		require.Equal(t, "name", errs[0].Path)
+
+		require.Equal(t, "test", errs[1].ExactPath)
+		require.Equal(t, "iban", errs[1].Path)
+	})
+
+	t.Run("override nil", func(t *testing.T) {
+		err := validate.OverrideExactPath("test", nil)
 		require.Nil(t, err)
 	})
 }

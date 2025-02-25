@@ -58,12 +58,20 @@ func ExampleFailFirst() {
 	// validation error for exact path: email, path: email, args: map[], violations: [{email map[]}]
 }
 
-func ExampleOverride() {
-	err := validate.Override("name", validate.Field("email", "test", validate.Email, validate.MinString(100)))
+func ExampleOverridePath() {
+	err := validate.OverridePath("name", validate.Field("email", "test", validate.Email, validate.MinString(100)))
 	printError(err)
 
 	// Output:
 	// validation error for exact path: email, path: name, args: map[], violations: [{email map[]} {min.string map[min:100]}]
+}
+
+func ExampleOverrideExactPath() {
+	err := validate.OverrideExactPath("name", validate.Field("email", "test", validate.Email, validate.MinString(100)))
+	printError(err)
+
+	// Output:
+	// validation error for exact path: name, path: email, args: map[], violations: [{email map[]} {min.string map[min:100]}]
 }
 
 func ExampleSlice() {
