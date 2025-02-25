@@ -150,6 +150,14 @@ func PrefixPath(prefix string, err error) error {
 	return err
 }
 
+// PrefixBothPaths will prefix both the path and the exact path in the given error.
+func PrefixBothPaths(prefix string, err error) error {
+	err = PrefixPath(prefix, err)
+	err = PrefixExactPath(prefix, err)
+
+	return err
+}
+
 // Resolve will resolve the value and run the validators on the resolved value while preserving the original validator target.
 // This is useful for validating slices or maps where you want to validate a field inside the value.
 func Resolve[Original any, Resolved any](resolveFunc func(Original) Resolved, validators ...Validator[Resolved]) []Validator[Original] {

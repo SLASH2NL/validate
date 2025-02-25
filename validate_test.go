@@ -168,6 +168,23 @@ func TestPrefixPath(t *testing.T) {
 	require.Equal(t, "name", errs[0].ExactPath)
 }
 
+func TestPrefixBothPaths(t *testing.T) {
+	err := validate.Field(
+		"name",
+		"",
+		failValidatorWithCode[string]("name.fail"),
+		failValidatorWithCode[string]("name.fail2"),
+	)
+
+	err = validate.PrefixPath("prefix", err)
+	err = validate.PrefixExactPath("prefix", err)
+
+	errs := validate.Collect(err)
+	require.Equal(t, 1, len(errs))
+	require.Equal(t, "prefix.name", errs[0].Path)
+	require.Equal(t, "prefix.name", errs[0].ExactPath)
+}
+
 func failValidatorWithCode[T any](code string) validate.Validator[T] {
 	return func(value T) *validate.Violation {
 		return &validate.Violation{Code: code}
