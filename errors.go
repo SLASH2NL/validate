@@ -2,6 +2,15 @@ package validate
 
 import "fmt"
 
+func IsValidationError(err error) bool {
+	switch err.(type) {
+	case Error, Errors:
+		return true
+	}
+
+	return false
+}
+
 type Errors []Error
 
 func (e Errors) Error() string {
