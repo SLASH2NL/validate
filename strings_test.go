@@ -16,25 +16,25 @@ func TestEmail(t *testing.T) {
 }
 
 func TestStrMin(t *testing.T) {
-	err := validate.StrMin(5)("test")
+	err := validate.MinString(5)("test")
 	require.NotNil(t, err)
 
-	err = validate.StrMin(5)("wvell")
+	err = validate.MinString(5)("wvell")
 	require.Nil(t, err)
 }
 
 func TestStrMax(t *testing.T) {
-	err := validate.StrMax(5)("wvelll")
+	err := validate.MaxString(5)("wvelll")
 	require.NotNil(t, err)
 
-	err = validate.StrMax(5)("test")
+	err = validate.MaxString(5)("test")
 	require.Nil(t, err)
 }
 
 func TestStrLowercase(t *testing.T) {
-	err := validate.StrLowercase("Test")
+	err := validate.Lowercase("Test")
 	require.NotNil(t, err)
 
-	err = validate.StrLowercase("test")
+	err = validate.Lowercase("test")
 	require.Nil(t, err)
 }

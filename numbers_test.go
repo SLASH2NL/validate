@@ -8,17 +8,17 @@ import (
 )
 
 func TestNumberMin(t *testing.T) {
-	err := validate.NumberMin(5)(3)
+	err := validate.MinNumber(5)(3)
 	require.NotNil(t, err)
 
-	err = validate.NumberMin(5)(10)
+	err = validate.MinNumber(5)(10)
 	require.Nil(t, err)
 }
 
 func TestNumberMax(t *testing.T) {
-	err := validate.NumberMax(5)(10)
+	err := validate.MaxNumber(5)(10)
 	require.NotNil(t, err)
 
-	err = validate.NumberMax(5)(3)
+	err = validate.MaxNumber(5)(3)
 	require.Nil(t, err)
 }
