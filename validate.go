@@ -19,7 +19,7 @@ func Field[T any](fieldName string, value T, validators ...Validator[T]) error {
 	}
 }
 
-// Join the errors into a single slice.
+// Join the errors into a single slice and merge all errors with the same exact path.
 // It wil only Join errors that are of the type Error or Errors.
 func Join(errs ...error) error {
 	verrs := Errors{}
@@ -31,9 +31,11 @@ func Join(errs ...error) error {
 
 		switch e := e.(type) {
 		case Errors:
-			verrs = append(verrs, e...)
+			for _, err := range e {
+				verrs = verrs.Merge(err)
+			}
 		case Error:
-			verrs = append(verrs, e)
+			verrs = verrs.Merge(e)
 		}
 	}
 

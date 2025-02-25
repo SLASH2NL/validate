@@ -70,6 +70,36 @@ func TestJoin(t *testing.T) {
 	require.Equal(t, "iban.fail", errs[1].Violations[0].Code)
 }
 
+func TestJoinMergesErrors(t *testing.T) {
+	err := validate.Join(
+		validate.Field(
+			"name",
+			"",
+			failValidatorWithCode[string]("name.fail"),
+		),
+		validate.Field(
+			"name",
+			"",
+			failValidatorWithCode[string]("name.second"),
+		),
+		validate.Field(
+			"iban",
+			"invalid",
+			failValidatorWithCode[string]("iban.fail"),
+		),
+	)
+
+	errs := validate.Collect(err)
+
+	require.Equal(t, 2, len(errs))
+	require.Equal(t, "name", errs[0].Path)
+	require.Equal(t, "name.fail", errs[0].Violations[0].Code)
+	require.Equal(t, "name.second", errs[0].Violations[1].Code)
+
+	require.Equal(t, "iban", errs[1].Path)
+	require.Equal(t, "iban.fail", errs[1].Violations[0].Code)
+}
+
 func TestOverridePath(t *testing.T) {
 	t.Run("override", func(t *testing.T) {
 		err := validate.Join(
@@ -176,8 +206,7 @@ func TestPrefixBothPaths(t *testing.T) {
 		failValidatorWithCode[string]("name.fail2"),
 	)
 
-	err = validate.PrefixPath("prefix", err)
-	err = validate.PrefixExactPath("prefix", err)
+	err = validate.PrefixBothPaths("prefix", err)
 
 	errs := validate.Collect(err)
 	require.Equal(t, 1, len(errs))
