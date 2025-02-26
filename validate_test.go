@@ -123,7 +123,7 @@ func TestJoinMergesErrors(t *testing.T) {
 	require.Equal(t, "iban.fail", errs[1].Violations[0].Code)
 }
 
-func TestColect(t *testing.T) {
+func TestCollect(t *testing.T) {
 	t.Run("simple", func(t *testing.T) {
 		err := validate.Join(
 			validate.Field(
@@ -161,6 +161,22 @@ func TestColect(t *testing.T) {
 		errs := validate.Collect(err)
 		require.Equal(t, 2, len(errs))
 	})
+}
+
+func TestGroup(t *testing.T) {
+	err := validate.Field(
+		"name",
+		"",
+		failValidatorWithCode[string]("name.fail"),
+		failValidatorWithCode[string]("name.fail2"),
+	)
+
+	err = validate.Group("prefix", err)
+
+	errs := validate.Collect(err)
+	require.Equal(t, 1, len(errs))
+	require.Equal(t, "name", errs[0].Path)
+	require.Equal(t, "prefix.name", errs[0].ExactPath)
 }
 
 func failValidatorWithCode[T any](code string) validate.Validator[T] {

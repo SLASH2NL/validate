@@ -119,6 +119,24 @@ func Resolve[Original any, Resolved any](resolveFunc func(Original) Resolved, va
 	return wrapped
 }
 
+// Group will prefix the exact path in the given error.
+// This function accepts Error and Errors.
+func Group(prefix string, err error) error {
+	switch err := err.(type) {
+	case Error:
+		err.ExactPath = prefix + "." + err.ExactPath
+		return err
+	case Errors:
+		for j, e := range err {
+			e.ExactPath = prefix + "." + e.ExactPath
+			err[j] = e
+		}
+		return err
+	}
+
+	return err
+}
+
 // validate will run the validators on the value and return the violations.
 // If a validator returns a non *Violation error it will return that error and discard the violations.
 func validate[T any](

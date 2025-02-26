@@ -17,13 +17,13 @@ func ExampleField() {
 func ExampleJoin() {
 	err := validate.Join(
 		validate.Field("email", "test", validate.Email),
-		validate.ErrLastPathSegment(validate.Field("name.iban", "invalid", validate.IBAN)),
+		validate.Field("iban", "invalid", validate.IBAN),
 	)
 	printError(err)
 
 	// Output:
 	// validation error for exact path: email, path: email, args: map[], violations: [violation code: email, args: map[]]
-	// validation error for exact path: name.iban, path: iban, args: map[], violations: [violation code: iban, args: map[]]
+	// validation error for exact path: iban, path: iban, args: map[], violations: [violation code: iban, args: map[]]
 }
 
 func ExampleCollect() {

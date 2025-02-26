@@ -87,42 +87,6 @@ func Merge(a Args, b Args) Args {
 	return dst
 }
 
-// PrefixExactPath will prefix the exact path in the given error.
-// This function accepts Error and Errors.
-func PrefixExactPath(prefix string, err error) error {
-	switch err := err.(type) {
-	case Error:
-		err.ExactPath = prefix + "." + err.ExactPath
-		return err
-	case Errors:
-		for j, e := range err {
-			e.ExactPath = prefix + "." + e.ExactPath
-			err[j] = e
-		}
-		return err
-	}
-
-	return err
-}
-
-// ErrLastPathSegment will change the Path in the given err to only use the last segment.
-// This function accepts Error and Errors.
-func ErrLastPathSegment(err error) error {
-	switch err := err.(type) {
-	case Error:
-		err.Path = LastPathSegment(err.Path)
-		return err
-	case Errors:
-		for j, e := range err {
-			e.Path = LastPathSegment(e.Path)
-			err[j] = e
-		}
-		return err
-	}
-
-	return err
-}
-
 // LastPathSegment will return the last segment of the given path.
 // It assumes the path is separated by dots.
 func LastPathSegment(s string) string {
