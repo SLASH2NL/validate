@@ -27,7 +27,7 @@ func TestPrefixExactPath(t *testing.T) {
 		failValidatorWithCode[string]("name.fail2"),
 	)
 
-	err = validate.PrefixExactPath("prefix", err)
+	err = validate.ErrPrefixExactPath("prefix", err)
 
 	errs := validate.Collect(err)
 	require.Equal(t, 1, len(errs))
@@ -43,7 +43,7 @@ func TestPrefixPath(t *testing.T) {
 		failValidatorWithCode[string]("name.fail2"),
 	)
 
-	err = validate.PrefixPath("prefix", err)
+	err = validate.ErrPrefixPath("prefix", err)
 
 	errs := validate.Collect(err)
 	require.Equal(t, 1, len(errs))
@@ -59,7 +59,7 @@ func TestPrefixBothPaths(t *testing.T) {
 		failValidatorWithCode[string]("name.fail2"),
 	)
 
-	err = validate.PrefixBothPaths("prefix", err)
+	err = validate.ErrPrefixBothPaths("prefix", err)
 
 	errs := validate.Collect(err)
 	require.Equal(t, 1, len(errs))
@@ -77,7 +77,7 @@ func TestLastSegment(t *testing.T) {
 	errs := validate.Collect(err)
 	require.Equal(t, "address.name", errs[0].Path)
 
-	err = validate.LastSegment(err)
+	err = validate.ErrLastPathSegment(err)
 
 	errs = validate.Collect(err)
 	require.Equal(t, 1, len(errs))

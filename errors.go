@@ -87,9 +87,9 @@ func Merge(a Args, b Args) Args {
 	return dst
 }
 
-// PrefixExactPath will prefix the exact path in the given error.
+// ErrPrefixExactPath will prefix the exact path in the given error.
 // This function accepts Error and Errors.
-func PrefixExactPath(prefix string, err error) error {
+func ErrPrefixExactPath(prefix string, err error) error {
 	switch err := err.(type) {
 	case Error:
 		err.ExactPath = prefix + "." + err.ExactPath
@@ -105,9 +105,9 @@ func PrefixExactPath(prefix string, err error) error {
 	return err
 }
 
-// PrefixPath will prefix the path in the given error.
+// ErrPrefixPath will prefix the path in the given error.
 // This function accepts Error and Errors.
-func PrefixPath(prefix string, err error) error {
+func ErrPrefixPath(prefix string, err error) error {
 	switch err := err.(type) {
 	case Error:
 		err.Path = prefix + "." + err.Path
@@ -123,25 +123,25 @@ func PrefixPath(prefix string, err error) error {
 	return err
 }
 
-// PrefixBothPaths will prefix both the path and the exact path in the given error.
+// ErrPrefixBothPaths will prefix both the path and the exact path in the given error.
 // This function accepts Error and Errors.
-func PrefixBothPaths(prefix string, err error) error {
-	err = PrefixPath(prefix, err)
-	err = PrefixExactPath(prefix, err)
+func ErrPrefixBothPaths(prefix string, err error) error {
+	err = ErrPrefixPath(prefix, err)
+	err = ErrPrefixExactPath(prefix, err)
 
 	return err
 }
 
-// LastSegment will change the Path in the given err to only use the last segment.
+// ErrLastPathSegment will change the Path in the given err to only use the last segment.
 // This function accepts Error and Errors.
-func LastSegment(err error) error {
+func ErrLastPathSegment(err error) error {
 	switch err := err.(type) {
 	case Error:
-		err.Path = lastSegment(err.Path)
+		err.Path = LastPathSegment(err.Path)
 		return err
 	case Errors:
 		for j, e := range err {
-			e.Path = lastSegment(e.Path)
+			e.Path = LastPathSegment(e.Path)
 			err[j] = e
 		}
 		return err
@@ -150,7 +150,9 @@ func LastSegment(err error) error {
 	return err
 }
 
-func lastSegment(s string) string {
+// LastPathSegment will return the last segment of the given path.
+// It assumes the path is separated by dots.
+func LastPathSegment(s string) string {
 	if i := strings.LastIndex(s, "."); i != -1 {
 		return s[i+1:]
 	}

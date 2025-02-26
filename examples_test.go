@@ -17,7 +17,7 @@ func ExampleField() {
 func ExampleJoin() {
 	err := validate.Join(
 		validate.Field("email", "test", validate.Email),
-		validate.LastSegment(validate.Field("name.iban", "invalid", validate.IBAN)),
+		validate.ErrLastPathSegment(validate.Field("name.iban", "invalid", validate.IBAN)),
 	)
 	printError(err)
 

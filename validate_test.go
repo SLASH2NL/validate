@@ -18,7 +18,7 @@ func TestReturnError(t *testing.T) {
 			"John",
 			failValidator[string],
 		),
-		validate.PrefixBothPaths(
+		validate.ErrPrefixBothPaths(
 			"prefix",
 			validate.Field(
 				"iban",
