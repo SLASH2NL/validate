@@ -1,5 +1,7 @@
 package validate
 
+import "errors"
+
 // Validator represents a validator that can be used to validate a value.
 // If a validator fails it should return an new Violation.
 // If there is an unexpected exception a normal error should be returned. This error
@@ -63,6 +65,17 @@ func Collect(err error) []Error {
 	case Error:
 		return []Error{e}
 	default:
+		// The error could be wrapped, try to unwrap it.
+		var errs Errors
+		if errors.As(err, &errs) {
+			return errs
+		}
+
+		var single Error
+		if errors.As(err, &single) {
+			return []Error{single}
+		}
+
 		return []Error{}
 	}
 

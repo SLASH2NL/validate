@@ -2,6 +2,7 @@ package validate_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/SLASH2NL/validate"
@@ -123,6 +124,46 @@ func TestJoinMergesErrors(t *testing.T) {
 
 	require.Equal(t, "iban", errs[1].Path)
 	require.Equal(t, "iban.fail", errs[1].Violations[0].Code)
+}
+
+func TestColect(t *testing.T) {
+	t.Run("simple", func(t *testing.T) {
+		err := validate.Join(
+			validate.Field(
+				"name",
+				"",
+				failValidatorWithCode[string]("name.fail"),
+			),
+			validate.Field(
+				"iban",
+				"invalid",
+				failValidatorWithCode[string]("iban.fail"),
+			),
+		)
+
+		errs := validate.Collect(err)
+		require.Equal(t, 2, len(errs))
+	})
+
+	t.Run("unwrap error", func(t *testing.T) {
+		err := validate.Join(
+			validate.Field(
+				"name",
+				"",
+				failValidatorWithCode[string]("name.fail"),
+			),
+			validate.Field(
+				"iban",
+				"invalid",
+				failValidatorWithCode[string]("iban.fail"),
+			),
+		)
+
+		err = fmt.Errorf("some error: %w", err)
+
+		errs := validate.Collect(err)
+		require.Equal(t, 2, len(errs))
+	})
 }
 
 func failValidatorWithCode[T any](code string) validate.Validator[T] {
