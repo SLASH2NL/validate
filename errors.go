@@ -59,11 +59,27 @@ func (v Violation) Error() string {
 
 type Args map[string]any
 
-func (e Args) Merge(key string, value any) Args {
+func (e Args) Add(key string, value any) Args {
 	if e == nil {
 		e = make(Args)
 	}
 
 	e[key] = value
+	return e
+}
+
+func (e Args) Merge(from Args) Args {
+	if e == nil {
+		if from == nil {
+			return make(Args)
+		}
+
+		return from
+	}
+
+	for key, value := range from {
+		e[key] = value
+	}
+
 	return e
 }
