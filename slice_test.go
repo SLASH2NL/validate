@@ -18,7 +18,7 @@ func TestSlice(t *testing.T) {
 		{Name: "Deer John", Amount: 1},
 	}
 
-	err := validate.Slice("data", data).Items("total", func(value testSlice) *validate.Violation {
+	err := validate.Slice("data", data).Items("total", func(value testSlice) error {
 		if value.Amount < 5 {
 			return &validate.Violation{Code: "max"}
 		}
@@ -42,7 +42,7 @@ func TestSliceResolve(t *testing.T) {
 
 	resolver := func(t testSlice) int { return t.Amount }
 
-	validator := func(value int) *validate.Violation {
+	validator := func(value int) error {
 		if value < 5 {
 			return &validate.Violation{Code: "max"}
 		}

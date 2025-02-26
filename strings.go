@@ -6,7 +6,7 @@ import (
 	"unicode"
 )
 
-func Email(value string) *Violation {
+func Email(value string) error {
 	_, merr := mail.ParseAddress(string(value))
 	if merr != nil {
 		return &Violation{Code: CodeEmail}
@@ -16,7 +16,7 @@ func Email(value string) *Violation {
 }
 
 func Regex(re *regexp.Regexp) Validator[string] {
-	return func(value string) *Violation {
+	return func(value string) error {
 		if !re.MatchString(value) {
 			return &Violation{Code: CodeRegex, Args: Args{"pattern": re.String()}}
 		}
@@ -26,7 +26,7 @@ func Regex(re *regexp.Regexp) Validator[string] {
 }
 
 func MinString(length int) Validator[string] {
-	return func(value string) *Violation {
+	return func(value string) error {
 		if len(value) < length {
 			return &Violation{Code: CodeStringMin, Args: Args{"min": length}}
 		}
@@ -36,7 +36,7 @@ func MinString(length int) Validator[string] {
 }
 
 func MaxString(length int) Validator[string] {
-	return func(value string) *Violation {
+	return func(value string) error {
 		if len(value) > length {
 			return &Violation{Code: CodeStringMax, Args: Args{"max": length}}
 		}
@@ -45,7 +45,7 @@ func MaxString(length int) Validator[string] {
 	}
 }
 
-func Lowercase(value string) *Violation {
+func Lowercase(value string) error {
 	for _, r := range value {
 		if unicode.IsUpper(r) {
 			return &Violation{Code: CodeLowercase}
@@ -55,7 +55,7 @@ func Lowercase(value string) *Violation {
 	return nil
 }
 
-func Uppercase(value string) *Violation {
+func Uppercase(value string) error {
 	for _, r := range value {
 		if unicode.IsLower(r) {
 			return &Violation{Code: CodeUppercase}

@@ -20,7 +20,11 @@ func (v SliceValidator[T]) Items(field string, validators ...Validator[T]) error
 
 	path := fmt.Sprintf("%s.*", v.name)
 	for i, value := range v.value {
-		violations := validate(value, validators...)
+		violations, err := validate(value, validators...)
+		if err != nil {
+			return err
+		}
+
 		if violations == nil {
 			continue
 		}

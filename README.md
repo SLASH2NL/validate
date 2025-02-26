@@ -8,11 +8,12 @@ See `examples_test.go` for usage.
 
 ## Creating custom validators
 A validator is a simple function that takes a value and returns an error if the value is invalid.
-The error should be created with validate.NewError(code, args).
+If the error is a violation it should return a `validate.Violation` error.
+If the error is an exception that should be handled by the caller it should return a normal error.
 
 ```go
 // Returns an error if the number is not 42.
-func Is42(x int) *validate.Violdation {
+func Is42(x int) error {
     if x != 42 {
         return &validate.Violdation{ Code: "Is42" }
     }

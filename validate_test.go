@@ -1,11 +1,36 @@
 package validate_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/SLASH2NL/validate"
 	"github.com/stretchr/testify/require"
 )
+
+func TestReturnError(t *testing.T) {
+	exception := errors.New("some exception")
+
+	err := validate.Join(
+		validate.Field(
+			"first_name",
+			"John",
+			failValidator[string],
+		),
+		validate.PrefixBothPaths(
+			"prefix",
+			validate.Field(
+				"iban",
+				"invalid",
+				func(value string) error {
+					return exception
+				},
+			),
+		),
+	)
+	require.NotNil(t, err)
+	require.Equal(t, exception, err)
+}
 
 func TestIf(t *testing.T) {
 	// Validate true condition should run the validator.
@@ -215,11 +240,11 @@ func TestPrefixBothPaths(t *testing.T) {
 }
 
 func failValidatorWithCode[T any](code string) validate.Validator[T] {
-	return func(value T) *validate.Violation {
+	return func(value T) error {
 		return &validate.Violation{Code: code}
 	}
 }
 
-func failValidator[T any](value T) *validate.Violation {
+func failValidator[T any](value T) error {
 	return &validate.Violation{Code: "fail"}
 }

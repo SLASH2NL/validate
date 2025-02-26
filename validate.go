@@ -1,13 +1,19 @@
 package validate
 
 // Validator represents a validator that can be used to validate a value.
-// If a validator fails it should return an error with NewError.
-// If the validator does not fail it should return nil.
-type Validator[T any] func(value T) *Violation
+// If a validator fails it should return an new Violation.
+// If there is an unexpected exception a normal error should be returned. This error
+// will bubble up and be returned to the caller.
+type Validator[T any] func(value T) error
 
 // Field will run the validators on the value and return the errors grouped by the field.
+// If a violation returned a non Violation that is returned as exception error.
 func Field[T any](fieldName string, value T, validators ...Validator[T]) error {
-	violations := validate(value, validators...)
+	violations, err := validate(value, validators...)
+	if err != nil {
+		return err
+	}
+
 	if violations == nil {
 		return nil
 	}
@@ -36,6 +42,9 @@ func Join(errs ...error) error {
 			}
 		case Error:
 			verrs = verrs.Merge(e)
+		default:
+			// If we encountered an exception we just return that.
+			return e
 		}
 	}
 
@@ -70,7 +79,7 @@ func If[T any](shouldRun bool, validators ...Validator[T]) []Validator[T] {
 
 // FailFirst will run the validators in order and return the first error.
 func FailFirst[T any](validators ...Validator[T]) Validator[T] {
-	return func(value T) *Violation {
+	return func(value T) error {
 		for _, validator := range validators {
 			err := validator(value)
 			if err != nil {
@@ -166,7 +175,7 @@ func Resolve[Original any, Resolved any](resolveFunc func(Original) Resolved, va
 	wrapped := make([]Validator[Original], len(validators))
 	for i, validator := range validators {
 		validator := validator
-		wrapped[i] = func(input Original) *Violation {
+		wrapped[i] = func(input Original) error {
 			resolved := resolveFunc(input)
 			return validator(resolved)
 		}
@@ -176,10 +185,11 @@ func Resolve[Original any, Resolved any](resolveFunc func(Original) Resolved, va
 }
 
 // validate will run the validators on the value and return the violations.
+// If a validator returns a non *Violation error it will return that error and discard the violations.
 func validate[T any](
 	value T,
 	validators ...Validator[T],
-) []Violation {
+) ([]Violation, error) {
 	var violations []Violation
 
 	for _, validator := range validators {
@@ -188,12 +198,16 @@ func validate[T any](
 			continue
 		}
 
-		violations = append(violations, *err)
+		if violation, ok := err.(*Violation); ok {
+			violations = append(violations, *violation)
+		} else {
+			return nil, err
+		}
 	}
 
 	if len(violations) == 0 {
-		return nil
+		return nil, nil
 	}
 
-	return violations
+	return violations, nil
 }

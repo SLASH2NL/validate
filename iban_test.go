@@ -11,7 +11,7 @@ func TestIBAN(t *testing.T) {
 	t.Run("invalid", func(t *testing.T) {
 		violation := validate.IBAN("invalid")
 		require.NotNil(t, violation)
-		require.Equal(t, validate.CodeIBAN, violation.Code)
+		require.Equal(t, validate.CodeIBAN, violation.(*validate.Violation).Code)
 	})
 
 	t.Run("valid", func(t *testing.T) {

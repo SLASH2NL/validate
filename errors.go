@@ -53,6 +53,10 @@ type Violation struct {
 	Args Args
 }
 
+func (v Violation) Error() string {
+	return fmt.Sprintf("violation code: %s, args: %v", v.Code, v.Args)
+}
+
 type Args map[string]any
 
 func (e Args) Merge(key string, value any) Args {

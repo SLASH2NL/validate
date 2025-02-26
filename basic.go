@@ -14,7 +14,7 @@ func Required[T comparable](value T) *Violation {
 // Equal will validate that the value is equal to the expected value.
 // This will not do a deep comparison.
 func Equal[T comparable](expected T) Validator[T] {
-	return func(value T) *Violation {
+	return func(value T) error {
 		if value != expected {
 			return &Violation{Code: CodeEqual, Args: Args{"expected": expected}}
 		}
@@ -25,7 +25,7 @@ func Equal[T comparable](expected T) Validator[T] {
 
 // OneOf will validate that the value is one of the accepted values.
 func OneOf[T comparable](accepted ...T) Validator[T] {
-	return func(value T) *Violation {
+	return func(value T) error {
 		for _, a := range accepted {
 			if value == a {
 				return nil

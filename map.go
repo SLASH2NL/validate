@@ -25,7 +25,11 @@ func (v MapValidator[K, V]) Key(field string, key K, validators ...Validator[V])
 		}
 	}
 
-	violations := validate(value, validators...)
+	violations, err := validate(value, validators...)
+	if err != nil {
+		return err
+	}
+
 	if violations == nil {
 		return nil
 	}
@@ -43,7 +47,11 @@ func (v MapValidator[K, V]) Keys(field string, validators ...Validator[K]) error
 	var errs Errors
 
 	for key := range v.value {
-		violations := validate(key, validators...)
+		violations, err := validate(key, validators...)
+		if err != nil {
+			return err
+		}
+
 		if violations == nil {
 			continue
 		}
@@ -68,7 +76,11 @@ func (v MapValidator[K, V]) Values(field string, validators ...Validator[V]) err
 	var errs Errors
 
 	for key, value := range v.value {
-		violations := validate(value, validators...)
+		violations, err := validate(value, validators...)
+		if err != nil {
+			return err
+		}
+
 		if violations == nil {
 			continue
 		}

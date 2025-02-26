@@ -11,7 +11,7 @@ func ExampleField() {
 	printError(err)
 
 	// Output:
-	// validation error for exact path: email, path: email, args: map[], violations: [{email map[]}]
+	// validation error for exact path: email, path: email, args: map[], violations: [violation code: email, args: map[]]
 }
 
 func ExampleJoin() {
@@ -22,8 +22,8 @@ func ExampleJoin() {
 	printError(err)
 
 	// Output:
-	// validation error for exact path: email, path: email, args: map[], violations: [{email map[]}]
-	// validation error for exact path: iban, path: iban, args: map[], violations: [{iban map[]}]
+	// validation error for exact path: email, path: email, args: map[], violations: [violation code: email, args: map[]]
+	// validation error for exact path: iban, path: iban, args: map[], violations: [violation code: iban, args: map[]]
 }
 
 func ExampleCollect() {
@@ -47,7 +47,7 @@ func ExampleIf() {
 	printError(err)
 
 	// Output:
-	// validation error for exact path: email, path: email, args: map[], violations: [{email map[]}]
+	// validation error for exact path: email, path: email, args: map[], violations: [violation code: email, args: map[]]
 }
 
 func ExampleFailFirst() {
@@ -55,7 +55,7 @@ func ExampleFailFirst() {
 	printError(err)
 
 	// Output:
-	// validation error for exact path: email, path: email, args: map[], violations: [{email map[]}]
+	// validation error for exact path: email, path: email, args: map[], violations: [violation code: email, args: map[]]
 }
 
 func ExampleOverridePath() {
@@ -63,7 +63,7 @@ func ExampleOverridePath() {
 	printError(err)
 
 	// Output:
-	// validation error for exact path: email, path: name, args: map[], violations: [{email map[]} {min.string map[min:100]}]
+	// validation error for exact path: email, path: name, args: map[], violations: [violation code: email, args: map[] violation code: min.string, args: map[min:100]]
 }
 
 func ExampleOverrideExactPath() {
@@ -71,7 +71,7 @@ func ExampleOverrideExactPath() {
 	printError(err)
 
 	// Output:
-	// validation error for exact path: name, path: email, args: map[], violations: [{email map[]} {min.string map[min:100]}]
+	// validation error for exact path: name, path: email, args: map[], violations: [violation code: email, args: map[] violation code: min.string, args: map[min:100]]
 }
 
 func ExampleSlice() {
@@ -84,7 +84,7 @@ func ExampleSlice() {
 	printError(err)
 
 	// Output:
-	// validation error for exact path: data.0.total, path: data.*.total, args: map[index:0], violations: [{max.number map[max:5]}]
+	// validation error for exact path: data.0.total, path: data.*.total, args: map[index:0], violations: [violation code: max.number, args: map[max:5]]
 }
 
 func ExampleMap() {
@@ -97,7 +97,7 @@ func ExampleMap() {
 	printError(err)
 
 	// Output:
-	// validation error for exact path: data.name, path: data.name, args: map[key:second], violations: [{lowercase map[]}]
+	// validation error for exact path: data.name, path: data.name, args: map[key:second], violations: [violation code: lowercase, args: map[]]
 }
 
 func printError(err error) {
