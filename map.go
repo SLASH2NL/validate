@@ -1,5 +1,7 @@
 package validate
 
+import "fmt"
+
 func Map[K comparable, V any](name string, value map[K]V) MapValidator[K, V] {
 	return MapValidator[K, V]{
 		name:  name,
@@ -87,7 +89,7 @@ func (v MapValidator[K, V]) Values(field string, validators ...Validator[V]) err
 
 		errs = append(errs, Error{
 			Path:       v.name + "." + field,
-			ExactPath:  v.name + "." + field,
+			ExactPath:  v.name + "." + fmt.Sprintf("%v", key) + "." + field,
 			Violations: violations,
 			Args:       Args{"key": key},
 		})

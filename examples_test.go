@@ -81,7 +81,7 @@ func ExampleMap() {
 	printError(err)
 
 	// Output:
-	// validation error for exact path: data.name, path: data.name, args: map[key:second], violations: [violation code: lowercase, args: map[]]
+	// validation error for exact path: data.second.name, path: data.name, args: map[key:second], violations: [violation code: lowercase, args: map[]]
 }
 
 func printError(err error) {
