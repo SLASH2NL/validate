@@ -1,7 +1,7 @@
 package validate
 
 // Required will validate that the value is not the zero value for the type.
-func Required[T comparable](value T) *Violation {
+func Required[T comparable](value T) error {
 	var x T // Create the nullable value for the type
 
 	if value == x {
