@@ -17,13 +17,13 @@ func ExampleField() {
 func ExampleJoin() {
 	err := validate.Join(
 		validate.Field("email", "test", validate.Email),
-		validate.Field("iban", "invalid", validate.IBAN),
+		validate.LastSegment(validate.Field("name.iban", "invalid", validate.IBAN)),
 	)
 	printError(err)
 
 	// Output:
 	// validation error for exact path: email, path: email, args: map[], violations: [violation code: email, args: map[]]
-	// validation error for exact path: iban, path: iban, args: map[], violations: [violation code: iban, args: map[]]
+	// validation error for exact path: name.iban, path: iban, args: map[], violations: [violation code: iban, args: map[]]
 }
 
 func ExampleCollect() {
@@ -56,22 +56,6 @@ func ExampleFailFirst() {
 
 	// Output:
 	// validation error for exact path: email, path: email, args: map[], violations: [violation code: email, args: map[]]
-}
-
-func ExampleOverridePath() {
-	err := validate.OverridePath("name", validate.Field("email", "test", validate.Email, validate.MinString(100)))
-	printError(err)
-
-	// Output:
-	// validation error for exact path: email, path: name, args: map[], violations: [violation code: email, args: map[] violation code: min.string, args: map[min:100]]
-}
-
-func ExampleOverrideExactPath() {
-	err := validate.OverrideExactPath("name", validate.Field("email", "test", validate.Email, validate.MinString(100)))
-	printError(err)
-
-	// Output:
-	// validation error for exact path: name, path: email, args: map[], violations: [violation code: email, args: map[] violation code: min.string, args: map[min:100]]
 }
 
 func ExampleSlice() {

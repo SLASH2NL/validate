@@ -1,6 +1,9 @@
 package validate
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func IsValidationError(err error) bool {
 	switch err.(type) {
@@ -82,4 +85,74 @@ func Merge(a Args, b Args) Args {
 	}
 
 	return dst
+}
+
+// PrefixExactPath will prefix the exact path in the given error.
+// This function accepts Error and Errors.
+func PrefixExactPath(prefix string, err error) error {
+	switch err := err.(type) {
+	case Error:
+		err.ExactPath = prefix + "." + err.ExactPath
+		return err
+	case Errors:
+		for j, e := range err {
+			e.ExactPath = prefix + "." + e.ExactPath
+			err[j] = e
+		}
+		return err
+	}
+
+	return err
+}
+
+// PrefixPath will prefix the path in the given error.
+// This function accepts Error and Errors.
+func PrefixPath(prefix string, err error) error {
+	switch err := err.(type) {
+	case Error:
+		err.Path = prefix + "." + err.Path
+		return err
+	case Errors:
+		for j, e := range err {
+			e.Path = prefix + "." + e.Path
+			err[j] = e
+		}
+		return err
+	}
+
+	return err
+}
+
+// PrefixBothPaths will prefix both the path and the exact path in the given error.
+// This function accepts Error and Errors.
+func PrefixBothPaths(prefix string, err error) error {
+	err = PrefixPath(prefix, err)
+	err = PrefixExactPath(prefix, err)
+
+	return err
+}
+
+// LastSegment will change the Path in the given err to only use the last segment.
+// This function accepts Error and Errors.
+func LastSegment(err error) error {
+	switch err := err.(type) {
+	case Error:
+		err.Path = lastSegment(err.Path)
+		return err
+	case Errors:
+		for j, e := range err {
+			e.Path = lastSegment(e.Path)
+			err[j] = e
+		}
+		return err
+	}
+
+	return err
+}
+
+func lastSegment(s string) string {
+	if i := strings.LastIndex(s, "."); i != -1 {
+		return s[i+1:]
+	}
+	return s
 }
