@@ -68,18 +68,18 @@ func (e Args) Add(key string, value any) Args {
 	return e
 }
 
-func (e Args) Merge(from Args) Args {
-	if e == nil {
-		if from == nil {
-			return make(Args)
-		}
+// Merge merges a and b into a new Args.
+// If a key exists in both a and b, the value from b is used.
+func Merge(a Args, b Args) Args {
+	dst := make(Args)
 
-		return from
+	for key, value := range a {
+		dst[key] = value
 	}
 
-	for key, value := range from {
-		e[key] = value
+	for key, value := range b {
+		dst[key] = value
 	}
 
-	return e
+	return dst
 }
