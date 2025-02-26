@@ -87,9 +87,9 @@ func Merge(a Args, b Args) Args {
 	return dst
 }
 
-// ErrPrefixExactPath will prefix the exact path in the given error.
+// PrefixExactPath will prefix the exact path in the given error.
 // This function accepts Error and Errors.
-func ErrPrefixExactPath(prefix string, err error) error {
+func PrefixExactPath(prefix string, err error) error {
 	switch err := err.(type) {
 	case Error:
 		err.ExactPath = prefix + "." + err.ExactPath
@@ -101,33 +101,6 @@ func ErrPrefixExactPath(prefix string, err error) error {
 		}
 		return err
 	}
-
-	return err
-}
-
-// ErrPrefixPath will prefix the path in the given error.
-// This function accepts Error and Errors.
-func ErrPrefixPath(prefix string, err error) error {
-	switch err := err.(type) {
-	case Error:
-		err.Path = prefix + "." + err.Path
-		return err
-	case Errors:
-		for j, e := range err {
-			e.Path = prefix + "." + e.Path
-			err[j] = e
-		}
-		return err
-	}
-
-	return err
-}
-
-// ErrPrefixBothPaths will prefix both the path and the exact path in the given error.
-// This function accepts Error and Errors.
-func ErrPrefixBothPaths(prefix string, err error) error {
-	err = ErrPrefixPath(prefix, err)
-	err = ErrPrefixExactPath(prefix, err)
 
 	return err
 }

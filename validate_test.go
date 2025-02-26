@@ -18,15 +18,12 @@ func TestReturnError(t *testing.T) {
 			"John",
 			failValidator[string],
 		),
-		validate.ErrPrefixBothPaths(
-			"prefix",
-			validate.Field(
-				"iban",
-				"invalid",
-				func(value string) error {
-					return exception
-				},
-			),
+		validate.Field(
+			"iban",
+			"invalid",
+			func(value string) error {
+				return exception
+			},
 		),
 	)
 	require.NotNil(t, err)
