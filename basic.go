@@ -1,5 +1,16 @@
 package validate
 
+// Not will validate that the value is not the given value.
+func Not[T comparable](not T) Validator[T] {
+	return func(value T) error {
+		if value == not {
+			return &Violation{Code: CodeNot, Args: Args{"not": not}}
+		}
+
+		return nil
+	}
+}
+
 // Required will validate that the value is not the zero value for the type.
 func Required[T comparable](value T) error {
 	var x T // Create the nullable value for the type

@@ -48,3 +48,19 @@ func TestOneOf(t *testing.T) {
 	err = validate.OneOf(1, 2, 3, 4)(1)
 	require.Nil(t, err)
 }
+
+func TestNot(t *testing.T) {
+	err := validate.Not(1)(1)
+	require.NotNil(t, err)
+
+	err = validate.Not(2)(1)
+	require.Nil(t, err)
+}
+
+func TestEqual(t *testing.T) {
+	err := validate.Equal(1)(1)
+	require.Nil(t, err)
+
+	err = validate.Equal(2)(1)
+	require.NotNil(t, err)
+}
