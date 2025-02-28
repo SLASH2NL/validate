@@ -1,5 +1,21 @@
 package validate
 
+import "reflect"
+
+// NotNil will return an error if value is nil.
+func NotNil[T any](value T) error {
+	// Do a reflect check to see if the value is nil.
+	vof := reflect.ValueOf(value)
+	switch vof.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Slice:
+		if vof.IsNil() {
+			return &Violation{Code: CodeNotNil}
+		}
+	}
+
+	return nil
+}
+
 // Not will validate that the value is not the given value.
 func Not[T comparable](not T) Validator[T] {
 	return func(value T) error {

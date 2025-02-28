@@ -57,6 +57,19 @@ func TestNot(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestNotNil(t *testing.T) {
+	err := validate.NotNil(1)
+	require.Nil(t, err)
+
+	var x *int
+	err = validate.NotNil(x)
+	require.Error(t, err)
+
+	x = new(int)
+	err = validate.NotNil(x)
+	require.Nil(t, err)
+}
+
 func TestEqual(t *testing.T) {
 	err := validate.Equal(1)(1)
 	require.Nil(t, err)

@@ -4,6 +4,7 @@ const (
 	CodeUnknownField = "unknown.field"
 	CodeNotFound     = "not.found"
 	CodeRequired     = "required"
+	CodeNotNil       = "not.nil"
 	CodeNot          = "not"
 	CodeEqual        = "equal"
 	CodeOneOf        = "oneof"
