@@ -17,6 +17,11 @@ func TestIsValidationError(t *testing.T) {
 
 	err = validate.Errors{}
 	require.True(t, validate.IsValidationError(err))
+
+	// It could be wrapped.
+	err = validate.Errors{}
+	wrap := fmt.Errorf("wrapped: %w", err)
+	require.True(t, validate.IsValidationError(wrap))
 }
 
 func TestLastSegment(t *testing.T) {
@@ -30,5 +35,4 @@ func TestLastSegment(t *testing.T) {
 	require.Equal(t, 1, len(errs))
 	require.Equal(t, "address.name", errs[0].Path)
 	require.Equal(t, "name", validate.LastPathSegment(errs[0].Path))
-
 }

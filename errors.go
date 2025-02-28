@@ -1,6 +1,7 @@
 package validate
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -11,7 +12,14 @@ func IsValidationError(err error) bool {
 		return true
 	}
 
-	return false
+	// The error could be wrapped, try to unwrap it.
+	var errs Errors
+	if errors.As(err, &errs) {
+		return true
+	}
+
+	var single Error
+	return errors.As(err, &single)
 }
 
 type Errors []Error
