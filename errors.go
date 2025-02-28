@@ -60,6 +60,18 @@ func (v Violation) Error() string {
 	return fmt.Sprintf("violation code: %s, args: %v", v.Code, v.Args)
 }
 
+type Violations []Violation
+
+func (v Violations) Error() string {
+	var errs []string
+
+	for _, err := range v {
+		errs = append(errs, err.Error())
+	}
+
+	return fmt.Sprintf("violations: %v", errs)
+}
+
 type Args map[string]any
 
 func (e Args) Add(key string, value any) Args {

@@ -31,24 +31,31 @@ func TestReturnError(t *testing.T) {
 }
 
 func TestIf(t *testing.T) {
-	// Validate true condition should run the validator.
+	// Validate true condition should run the validators.
 	err := validate.Field(
 		"first_name",
 		"John",
-		validate.If(true, failValidator[string])...,
+		validate.If(
+			true,
+			failValidatorWithCode[string]("first"),
+			failValidatorWithCode[string]("second"),
+			successValidator[string],
+		),
 	)
 	require.NotNil(t, err)
 
 	errs := validate.Collect(err)
 	require.Equal(t, 1, len(errs))
+	require.Equal(t, 2, len(errs[0].Violations))
 	require.Equal(t, "first_name", errs[0].Path)
-	require.Equal(t, "fail", errs[0].Violations[0].Code)
+	require.Equal(t, "first", errs[0].Violations[0].Code)
+	require.Equal(t, "second", errs[0].Violations[1].Code)
 
 	// Validate false condition should not run the validator.
 	err = validate.Field[string](
 		"first_name",
 		"John",
-		validate.If(false, failValidator[string])...,
+		validate.If(false, failValidator[string]),
 	)
 	require.Nil(t, err)
 }
@@ -187,4 +194,8 @@ func failValidatorWithCode[T any](code string) validate.Validator[T] {
 
 func failValidator[T any](value T) error {
 	return &validate.Violation{Code: "fail"}
+}
+
+func successValidator[T any](value T) error {
+	return nil
 }

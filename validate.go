@@ -82,12 +82,25 @@ func Collect(err error) []Error {
 }
 
 // If will run the validators only if the shouldRun is true.
-func If[T any](shouldRun bool, validators ...Validator[T]) []Validator[T] {
+func If[T any](shouldRun bool, validators ...Validator[T]) Validator[T] {
 	if !shouldRun {
-		return nil
+		return func(value T) error {
+			return nil
+		}
 	}
 
-	return validators
+	return func(v T) error {
+		violations, err := validate(v, validators...)
+		if err != nil {
+			return err
+		}
+
+		if violations == nil {
+			return nil
+		}
+
+		return Violations(violations)
+	}
 }
 
 // FailFirst will run the validators in order and return the first error.
@@ -151,9 +164,12 @@ func validate[T any](
 			continue
 		}
 
-		if violation, ok := err.(*Violation); ok {
-			violations = append(violations, *violation)
-		} else {
+		switch err := err.(type) {
+		case Violations:
+			violations = append(violations, err...)
+		case *Violation:
+			violations = append(violations, *err)
+		default:
 			return nil, err
 		}
 	}

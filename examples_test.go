@@ -41,8 +41,8 @@ func ExampleCollect() {
 
 func ExampleIf() {
 	err := validate.Join(
-		validate.Field("email", "test", validate.If(true, validate.Email)...),
-		validate.Field("iban", "invalid", validate.If(false, validate.IBAN)...),
+		validate.Field("email", "test", validate.If(true, validate.Email)),
+		validate.Field("iban", "invalid", validate.If(false, validate.IBAN)),
 	)
 	printError(err)
 
