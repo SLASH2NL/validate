@@ -3,7 +3,7 @@ package validate
 import "fmt"
 
 // Slice will run the validators on each element in the slice.
-func Slice[F ~string, T any](name F, value []T, validators ...Validator[T]) SliceValidator[T] {
+func Slice[F ~string, T any](name F, value []T) SliceValidator[T] {
 	return SliceValidator[T]{
 		name:  string(name),
 		value: value,
