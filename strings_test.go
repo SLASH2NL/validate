@@ -8,16 +8,18 @@ import (
 )
 
 func TestPrefix(t *testing.T) {
-	err := validate.Prefix("prefix")("test")
+	err := validate.Prefix("someprefix")("test")
 	require.NotNil(t, err)
+	require.Equal(t, "someprefix", err.(*validate.Violation).Args["prefix"])
 
 	err = validate.Prefix("pre")("prefix")
 	require.Nil(t, err)
 }
 
 func TestSuffix(t *testing.T) {
-	err := validate.Suffix("suffix")("test")
+	err := validate.Suffix("somesuffix")("test")
 	require.NotNil(t, err)
+	require.Equal(t, "somesuffix", err.(*validate.Violation).Args["suffix"])
 
 	err = validate.Suffix("fix")("suffix")
 	require.Nil(t, err)

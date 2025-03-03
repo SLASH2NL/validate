@@ -69,7 +69,7 @@ func Uppercase(value string) error {
 func Prefix(prefix string) Validator[string] {
 	return func(value string) error {
 		if !strings.HasPrefix(value, prefix) {
-			return &Violation{Code: "prefix"}
+			return &Violation{Code: "prefix", Args: Args{"prefix": prefix}}
 		}
 
 		return nil
@@ -79,7 +79,7 @@ func Prefix(prefix string) Validator[string] {
 func Suffix(suffix string) Validator[string] {
 	return func(value string) error {
 		if !strings.HasSuffix(value, suffix) {
-			return &Violation{Code: "suffix"}
+			return &Violation{Code: "suffix", Args: Args{"suffix": suffix}}
 		}
 
 		return nil
