@@ -12,6 +12,8 @@ const (
 	CodeNumberMax    = "max.number"
 	CodeStringMin    = "min.string"
 	CodeStringMax    = "max.string"
+	CodePrefix       = "prefix"
+	CodeSuffix       = "suffix"
 	CodeEmail        = "email"
 	CodeRegex        = "regex"
 	CodeLowercase    = "lowercase"

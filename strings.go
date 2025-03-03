@@ -3,6 +3,7 @@ package validate
 import (
 	"net/mail"
 	"regexp"
+	"strings"
 	"unicode"
 )
 
@@ -63,4 +64,24 @@ func Uppercase(value string) error {
 	}
 
 	return nil
+}
+
+func Prefix(prefix string) Validator[string] {
+	return func(value string) error {
+		if !strings.HasPrefix(value, prefix) {
+			return &Violation{Code: "prefix"}
+		}
+
+		return nil
+	}
+}
+
+func Suffix(suffix string) Validator[string] {
+	return func(value string) error {
+		if !strings.HasSuffix(value, suffix) {
+			return &Violation{Code: "suffix"}
+		}
+
+		return nil
+	}
 }

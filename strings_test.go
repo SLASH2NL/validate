@@ -7,6 +7,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestPrefix(t *testing.T) {
+	err := validate.Prefix("prefix")("test")
+	require.NotNil(t, err)
+
+	err = validate.Prefix("pre")("prefix")
+	require.Nil(t, err)
+}
+
+func TestSuffix(t *testing.T) {
+	err := validate.Suffix("suffix")("test")
+	require.NotNil(t, err)
+
+	err = validate.Suffix("fix")("suffix")
+	require.Nil(t, err)
+}
+
 func TestEmail(t *testing.T) {
 	err := validate.Email("test")
 	require.NotNil(t, err)
