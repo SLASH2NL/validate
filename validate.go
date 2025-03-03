@@ -81,6 +81,34 @@ func Collect(err error) []Error {
 
 }
 
+// And will run all validators and only return an error if all validators error.
+func And[T any](validators ...Validator[T]) Validator[T] {
+	return func(value T) error {
+		var allViolations Violations
+
+		for _, validator := range validators {
+			violations, err := validate(value, validator)
+			if err != nil {
+				// If an a non violation error is returned we will bubble it up.
+				return err
+			}
+
+			// We can return early if there are no violations in one validator.
+			if len(violations) == 0 {
+				return nil
+			}
+
+			allViolations = append(allViolations, violations...)
+		}
+
+		if len(allViolations) == 0 {
+			return nil
+		}
+
+		return allViolations
+	}
+}
+
 // If will run the validators only if the shouldRun is true.
 func If[T any](shouldRun bool, validators ...Validator[T]) Validator[T] {
 	if !shouldRun {

@@ -60,6 +60,49 @@ func TestIf(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestAnd(t *testing.T) {
+	t.Run("all validators pass", func(t *testing.T) {
+		err := validate.Field(
+			"first_name",
+			"John",
+			validate.And(
+				successValidator[string],
+				successValidator[string],
+			),
+		)
+		require.Nil(t, err)
+	})
+
+	t.Run("a validator fails", func(t *testing.T) {
+		err := validate.Field(
+			"first_name",
+			"John",
+			validate.And(
+				failValidatorWithCode[string]("failing"),
+				successValidator[string],
+			),
+		)
+		require.Nil(t, err)
+	})
+
+	t.Run("all validators fail", func(t *testing.T) {
+		err := validate.Field(
+			"first_name",
+			"John",
+			validate.And(
+				failValidatorWithCode[string]("first"),
+				failValidatorWithCode[string]("second"),
+			),
+		)
+		require.Error(t, err)
+		errs := validate.Collect(err)
+		require.Equal(t, 1, len(errs))
+		require.Equal(t, "first_name", errs[0].Path)
+		require.Equal(t, "first", errs[0].Violations[0].Code)
+		require.Equal(t, "second", errs[0].Violations[1].Code)
+	})
+}
+
 func TestFailFirst(t *testing.T) {
 	err := validate.Field(
 		"first_name",
