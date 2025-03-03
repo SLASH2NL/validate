@@ -213,6 +213,20 @@ func TestCollect(t *testing.T) {
 	})
 }
 
+func TestReplaceIfErr(t *testing.T) {
+	err := validate.Field(
+		"name",
+		"",
+		failValidatorWithCode[string]("name.fail"),
+		failValidatorWithCode[string]("name.fail2"),
+	)
+
+	override := errors.New("some error")
+
+	err = validate.ReplaceIfErr(err, override)
+	require.ErrorIs(t, err, override)
+}
+
 func TestGroup(t *testing.T) {
 	err := validate.Field(
 		"name",

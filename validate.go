@@ -160,6 +160,16 @@ func Resolve[Original any, Resolved any](resolveFunc func(Original) Resolved, va
 	return wrapped
 }
 
+// ReplaceIfErr will replace err with the given newErr if err is not nil.
+// This is usefull for overriding a validation error with a custom error.
+func ReplaceIfErr(err error, newErr error) error {
+	if err != nil {
+		return newErr
+	}
+
+	return nil
+}
+
 // Group will prefix the exact path in the given error.
 // This function accepts Error and Errors.
 func Group(prefix string, err error) error {
