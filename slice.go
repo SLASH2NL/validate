@@ -22,7 +22,13 @@ func (v SliceValidator[T]) Items(field string, validators ...Validator[T]) error
 	for i, value := range v.value {
 		violations, err := validate(value, validators...)
 		if err != nil {
-			return err
+			// It could be that the validators returned an Error or Errors. If so we map it with the correct paths.
+			return mapError(err, func(err Error) Error {
+				err.Path = prefixPath(err.Path, path+"."+field)
+				err.ExactPath = prefixPath(err.ExactPath, fmt.Sprintf("%s.%d.%s", v.name, i, field))
+				err.Args = err.Args.Add("index", i)
+				return err
+			})
 		}
 
 		if violations == nil {

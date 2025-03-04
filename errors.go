@@ -115,3 +115,32 @@ func LastPathSegment(s string) string {
 	}
 	return s
 }
+
+// mapError will run the mapFunc on the given err if the error is of type Error or Errors.
+// This is used in the Map and Slice functions to add the correct path and args to an error if the
+// validators returned a normal error instead of a list of violations.
+func mapError(err error, mapFunc func(Error) Error) error {
+	if err == nil {
+		return nil
+	}
+
+	switch e := err.(type) {
+	case Errors:
+		for i := range e {
+			e[i] = mapFunc(e[i])
+		}
+		return e
+	case Error:
+		return mapFunc(e)
+	default:
+		return err
+	}
+}
+
+func prefixPath(path string, prefix string) string {
+	if path == "" {
+		return prefix
+	}
+
+	return prefix + "." + path
+}

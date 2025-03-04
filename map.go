@@ -21,7 +21,7 @@ func (v MapValidator[K, V]) Key(field string, key K, validators ...Validator[V])
 	if !ok {
 		return Error{
 			Path:       v.name + "." + field,
-			ExactPath:  v.name + "." + field,
+			ExactPath:  v.name + "." + fmt.Sprintf("%v", key) + "." + field,
 			Violations: []Violation{{Code: CodeUnknownField}},
 			Args:       Args{"key": key},
 		}
@@ -29,7 +29,8 @@ func (v MapValidator[K, V]) Key(field string, key K, validators ...Validator[V])
 
 	violations, err := validate(value, validators...)
 	if err != nil {
-		return err
+		// It could be that the validators returned an Error or Errors. If so we map it with the correct paths.
+		return prefixMapPaths(err, v.name, field, fmt.Sprintf("%v", key))
 	}
 
 	if violations == nil {
@@ -38,7 +39,7 @@ func (v MapValidator[K, V]) Key(field string, key K, validators ...Validator[V])
 
 	return Error{
 		Path:       v.name + "." + field,
-		ExactPath:  v.name + "." + field,
+		ExactPath:  v.name + "." + fmt.Sprintf("%v", key) + "." + field,
 		Violations: violations,
 		Args:       Args{"key": key},
 	}
@@ -51,36 +52,8 @@ func (v MapValidator[K, V]) Keys(field string, validators ...Validator[K]) error
 	for key := range v.value {
 		violations, err := validate(key, validators...)
 		if err != nil {
-			return err
-		}
-
-		if violations == nil {
-			continue
-		}
-
-		errs = append(errs, Error{
-			Path:       v.name + "." + field,
-			ExactPath:  v.name + "." + field,
-			Violations: violations,
-			Args:       Args{"key": key},
-		})
-	}
-
-	if len(errs) == 0 {
-		return nil
-	}
-
-	return errs
-}
-
-// Values runs the validators on all values.
-func (v MapValidator[K, V]) Values(field string, validators ...Validator[V]) error {
-	var errs Errors
-
-	for key, value := range v.value {
-		violations, err := validate(value, validators...)
-		if err != nil {
-			return err
+			// It could be that the validators returned an Error or Errors. If so we map it with the correct paths.
+			return prefixMapPaths(err, v.name, field, fmt.Sprintf("%v", key))
 		}
 
 		if violations == nil {
@@ -100,4 +73,43 @@ func (v MapValidator[K, V]) Values(field string, validators ...Validator[V]) err
 	}
 
 	return errs
+}
+
+// Values runs the validators on all values.
+func (v MapValidator[K, V]) Values(field string, validators ...Validator[V]) error {
+	var errs Errors
+
+	for key, value := range v.value {
+		violations, err := validate(value, validators...)
+		if err != nil {
+			// It could be that the validators returned an Error or Errors. If so we map it with the correct paths.
+			return prefixMapPaths(err, v.name, field, fmt.Sprintf("%v", key))
+		}
+
+		if violations == nil {
+			continue
+		}
+
+		errs = append(errs, Error{
+			Path:       v.name + "." + field,
+			ExactPath:  v.name + "." + fmt.Sprintf("%v", key) + "." + field,
+			Violations: violations,
+			Args:       Args{"key": key},
+		})
+	}
+
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return errs
+}
+
+func prefixMapPaths(err error, name string, field string, key string) error {
+	return mapError(err, func(err Error) Error {
+		err.Path = prefixPath(err.Path, name+"."+field)
+		err.ExactPath = prefixPath(err.ExactPath, name+"."+fmt.Sprintf("%v", key)+"."+field)
+		err.Args = err.Args.Add("key", key)
+		return err
+	})
 }
