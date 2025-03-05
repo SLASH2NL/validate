@@ -3,6 +3,7 @@ package validate
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"strings"
 )
 
@@ -94,15 +95,21 @@ func (e Args) Add(key string, value any) Args {
 // Merge merges a and b into a new Args.
 // If a key exists in both a and b, the value from b is used.
 func Merge(a Args, b Args) Args {
+	if a == nil && b == nil {
+		return nil
+	}
+
+	if a == nil {
+		return b
+	}
+
+	if b == nil {
+		return a
+	}
+
 	dst := make(Args)
-
-	for key, value := range a {
-		dst[key] = value
-	}
-
-	for key, value := range b {
-		dst[key] = value
-	}
+	maps.Copy(dst, a)
+	maps.Copy(dst, b)
 
 	return dst
 }
