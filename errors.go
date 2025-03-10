@@ -7,9 +7,9 @@ import (
 	"strings"
 )
 
+// IsValidationError returns true if the given error is of type Error or Errors or if it contains a wrapped Error or Errors.
 func IsValidationError(err error) bool {
-	switch err.(type) {
-	case Error, Errors:
+	if isValidationError(err) {
 		return true
 	}
 
@@ -21,6 +21,15 @@ func IsValidationError(err error) bool {
 
 	var single Error
 	return errors.As(err, &single)
+}
+
+func isValidationError(err error) bool {
+	switch err.(type) {
+	case Error, Errors:
+		return true
+	}
+
+	return false
 }
 
 type Errors []Error
@@ -39,6 +48,15 @@ func (e Errors) Merge(errs Error) Errors {
 	return append(e, errs)
 }
 
+// MergeAll merges the two Errors.
+func (e Errors) MergeAll(errs Errors) Errors {
+	for _, err := range errs {
+		e = e.Merge(err)
+	}
+
+	return e
+}
+
 func (e Errors) Error() string {
 	var errs []string
 
@@ -47,6 +65,15 @@ func (e Errors) Error() string {
 	}
 
 	return fmt.Sprintf("validation errors: %v", errs)
+}
+
+// map runs fn on every error.
+func (e Errors) mapErrors(fn func(Error) Error) Errors {
+	for i := range e {
+		e[i] = fn(e[i])
+	}
+
+	return e
 }
 
 type Error struct {

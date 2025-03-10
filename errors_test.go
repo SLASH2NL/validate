@@ -2,6 +2,7 @@ package validate_test
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/SLASH2NL/validate"
@@ -51,6 +52,10 @@ func TestMapError(t *testing.T) {
 					Name:    "John",
 					Address: "Street 1",
 				},
+				"multiple-some-id": {
+					Name:    "John",
+					Address: "Street 1",
+				},
 			},
 		).Values("person", func(value Person) error {
 			return validate.Join(
@@ -60,11 +65,13 @@ func TestMapError(t *testing.T) {
 		})
 		require.NotNil(t, err)
 		errs := validate.Collect(err)
-		require.Equal(t, 2, len(errs))
-		require.Equal(t, "persons.person.name", errs[0].Path)
-		require.Equal(t, "persons.some-id.person.name", errs[0].ExactPath)
-		require.Equal(t, "persons.person.address", errs[1].Path)
-		require.Equal(t, "persons.some-id.person.address", errs[1].ExactPath)
+		require.Equal(t, 4, len(errs))
+
+		for _, err := range errs {
+			if !slices.Contains([]string{"persons.some-id.person.name", "persons.some-id.person.address", "persons.multiple-some-id.person.name", "persons.multiple-some-id.person.address"}, err.ExactPath) {
+				t.Errorf("unexpected exact path: %s", err.ExactPath)
+			}
+		}
 	})
 
 	t.Run("map keys", func(t *testing.T) {

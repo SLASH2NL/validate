@@ -1,6 +1,8 @@
 package validate
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func Map[K comparable, V any](name string, value map[K]V) MapValidator[K, V] {
 	return MapValidator[K, V]{
@@ -27,89 +29,122 @@ func (v MapValidator[K, V]) Key(field string, key K, validators ...Validator[V])
 		}
 	}
 
+	var verrs Errors
+
 	violations, err := validate(value, validators...)
 	if err != nil {
 		// It could be that the validators returned an Error or Errors. If so we map it with the correct paths.
-		return prefixMapPaths(err, v.name, field, fmt.Sprintf("%v", key))
+		if isValidationError(err) {
+			switch err := err.(type) {
+			case Error:
+				verrs = verrs.Merge(prefixMapError(err, v.name, field, key))
+			case Errors:
+				verrs = verrs.MergeAll(err.mapErrors(func(err Error) Error {
+					return prefixMapError(err, v.name, field, key)
+				}))
+			}
+		} else {
+			return err
+		}
 	}
 
-	if violations == nil {
+	if len(violations) > 0 {
+		verrs = append(verrs, Error{
+			Path:       v.name + "." + field,
+			ExactPath:  v.name + "." + fmt.Sprintf("%v", key) + "." + field,
+			Violations: violations,
+			Args:       Args{"key": key},
+		})
+	}
+
+	if len(verrs) == 0 {
 		return nil
 	}
 
-	return Error{
-		Path:       v.name + "." + field,
-		ExactPath:  v.name + "." + fmt.Sprintf("%v", key) + "." + field,
-		Violations: violations,
-		Args:       Args{"key": key},
-	}
+	return verrs
 }
 
 // Keys runs the validators on all keys.
 func (v MapValidator[K, V]) Keys(field string, validators ...Validator[K]) error {
-	var errs Errors
+	var verrs Errors
 
 	for key := range v.value {
 		violations, err := validate(key, validators...)
 		if err != nil {
 			// It could be that the validators returned an Error or Errors. If so we map it with the correct paths.
-			return prefixMapPaths(err, v.name, field, fmt.Sprintf("%v", key))
+			if isValidationError(err) {
+				switch err := err.(type) {
+				case Error:
+					verrs = verrs.Merge(prefixMapError(err, v.name, field, key))
+				case Errors:
+					verrs = verrs.MergeAll(err.mapErrors(func(err Error) Error {
+						return prefixMapError(err, v.name, field, key)
+					}))
+				}
+			} else {
+				return err
+			}
 		}
 
-		if violations == nil {
-			continue
+		if len(violations) > 0 {
+			verrs = append(verrs, Error{
+				Path:       v.name + "." + field,
+				ExactPath:  v.name + "." + fmt.Sprintf("%v", key) + "." + field,
+				Violations: violations,
+				Args:       Args{"key": key},
+			})
 		}
-
-		errs = append(errs, Error{
-			Path:       v.name + "." + field,
-			ExactPath:  v.name + "." + fmt.Sprintf("%v", key) + "." + field,
-			Violations: violations,
-			Args:       Args{"key": key},
-		})
 	}
 
-	if len(errs) == 0 {
+	if len(verrs) == 0 {
 		return nil
 	}
 
-	return errs
+	return verrs
 }
 
 // Values runs the validators on all values.
 func (v MapValidator[K, V]) Values(field string, validators ...Validator[V]) error {
-	var errs Errors
+	var verrs Errors
 
 	for key, value := range v.value {
 		violations, err := validate(value, validators...)
 		if err != nil {
 			// It could be that the validators returned an Error or Errors. If so we map it with the correct paths.
-			return prefixMapPaths(err, v.name, field, fmt.Sprintf("%v", key))
+			if isValidationError(err) {
+				switch err := err.(type) {
+				case Error:
+					verrs = verrs.Merge(prefixMapError(err, v.name, field, key))
+				case Errors:
+					verrs = verrs.MergeAll(err.mapErrors(func(err Error) Error {
+						return prefixMapError(err, v.name, field, key)
+					}))
+				}
+			} else {
+				return err
+			}
 		}
 
-		if violations == nil {
-			continue
+		if len(violations) > 0 {
+			verrs = append(verrs, Error{
+				Path:       v.name + "." + field,
+				ExactPath:  v.name + "." + fmt.Sprintf("%v", key) + "." + field,
+				Violations: violations,
+				Args:       Args{"key": key},
+			})
 		}
-
-		errs = append(errs, Error{
-			Path:       v.name + "." + field,
-			ExactPath:  v.name + "." + fmt.Sprintf("%v", key) + "." + field,
-			Violations: violations,
-			Args:       Args{"key": key},
-		})
 	}
 
-	if len(errs) == 0 {
+	if len(verrs) == 0 {
 		return nil
 	}
 
-	return errs
+	return verrs
 }
 
-func prefixMapPaths(err error, name string, field string, key string) error {
-	return mapError(err, func(err Error) Error {
-		err.Path = prefixPath(err.Path, name+"."+field)
-		err.ExactPath = prefixPath(err.ExactPath, name+"."+fmt.Sprintf("%v", key)+"."+field)
-		err.Args = err.Args.Add("key", key)
-		return err
-	})
+func prefixMapError(err Error, name string, field string, key any) Error {
+	err.Path = prefixPath(err.Path, name+"."+field)
+	err.ExactPath = prefixPath(err.ExactPath, name+"."+fmt.Sprintf("%v", key)+"."+field)
+	err.Args = err.Args.Add("key", key)
+	return err
 }
