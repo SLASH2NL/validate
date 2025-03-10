@@ -37,9 +37,9 @@ func (v MapValidator[K, V]) Key(field string, key K, validators ...Validator[V])
 		if isValidationError(err) {
 			switch err := err.(type) {
 			case Error:
-				verrs = verrs.Merge(prefixMapError(err, v.name, field, key))
+				verrs = verrs.merge(prefixMapError(err, v.name, field, key))
 			case Errors:
-				verrs = verrs.MergeAll(err.mapErrors(func(err Error) Error {
+				verrs = verrs.mergeAll(err.mapErrors(func(err Error) Error {
 					return prefixMapError(err, v.name, field, key)
 				}))
 			}
@@ -75,9 +75,9 @@ func (v MapValidator[K, V]) Keys(field string, validators ...Validator[K]) error
 			if isValidationError(err) {
 				switch err := err.(type) {
 				case Error:
-					verrs = verrs.Merge(prefixMapError(err, v.name, field, key))
+					verrs = verrs.merge(prefixMapError(err, v.name, field, key))
 				case Errors:
-					verrs = verrs.MergeAll(err.mapErrors(func(err Error) Error {
+					verrs = verrs.mergeAll(err.mapErrors(func(err Error) Error {
 						return prefixMapError(err, v.name, field, key)
 					}))
 				}
@@ -114,9 +114,9 @@ func (v MapValidator[K, V]) Values(field string, validators ...Validator[V]) err
 			if isValidationError(err) {
 				switch err := err.(type) {
 				case Error:
-					verrs = verrs.Merge(prefixMapError(err, v.name, field, key))
+					verrs = verrs.merge(prefixMapError(err, v.name, field, key))
 				case Errors:
-					verrs = verrs.MergeAll(err.mapErrors(func(err Error) Error {
+					verrs = verrs.mergeAll(err.mapErrors(func(err Error) Error {
 						return prefixMapError(err, v.name, field, key)
 					}))
 				}

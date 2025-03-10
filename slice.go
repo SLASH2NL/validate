@@ -26,9 +26,9 @@ func (v SliceValidator[T]) Items(field string, validators ...Validator[T]) error
 			if isValidationError(err) {
 				switch err := err.(type) {
 				case Error:
-					verrs = verrs.Merge(prefixSliceError(err, v.name, field, i))
+					verrs = verrs.merge(prefixSliceError(err, v.name, field, i))
 				case Errors:
-					verrs = verrs.MergeAll(err.mapErrors(func(err Error) Error {
+					verrs = verrs.mergeAll(err.mapErrors(func(err Error) Error {
 						return prefixSliceError(err, v.name, field, i)
 					}))
 				}

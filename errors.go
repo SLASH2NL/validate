@@ -34,10 +34,10 @@ func isValidationError(err error) bool {
 
 type Errors []Error
 
-// Merge merges the given error into the errors.
+// merge merges the given error into the errors.
 // If there is already an error with the same exact path, it will merge the violations.
 // Otherwise it is added to the errors.
-func (e Errors) Merge(errs Error) Errors {
+func (e Errors) merge(errs Error) Errors {
 	for i, err := range e {
 		if err.ExactPath == errs.ExactPath {
 			e[i].Violations = append(e[i].Violations, errs.Violations...)
@@ -48,10 +48,10 @@ func (e Errors) Merge(errs Error) Errors {
 	return append(e, errs)
 }
 
-// MergeAll merges the two Errors.
-func (e Errors) MergeAll(errs Errors) Errors {
+// mergeAll merges the two Errors.
+func (e Errors) mergeAll(errs Errors) Errors {
 	for _, err := range errs {
-		e = e.Merge(err)
+		e = e.merge(err)
 	}
 
 	return e

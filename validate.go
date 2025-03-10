@@ -40,10 +40,10 @@ func Join(errs ...error) error {
 		switch e := e.(type) {
 		case Errors:
 			for _, err := range e {
-				verrs = verrs.Merge(err)
+				verrs = verrs.merge(err)
 			}
 		case Error:
-			verrs = verrs.Merge(e)
+			verrs = verrs.merge(e)
 		default:
 			// If we encountered an exception we just return that.
 			return e
